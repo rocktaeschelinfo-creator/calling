@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Counter App - Live</title>
+    <title>Elbfitness Call Tracker</title>
     <style>
         * {
             margin: 0;
@@ -12,8 +12,8 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -23,10 +23,10 @@
 
         .container {
             background: white;
-            border-radius: 12px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
             padding: 40px;
-            max-width: 500px;
+            max-width: 520px;
             width: 100%;
             max-height: 90vh;
             overflow-y: auto;
@@ -34,9 +34,10 @@
 
         h1 {
             text-align: center;
-            color: #333;
+            color: #1e3c72;
             margin-bottom: 30px;
-            font-size: 28px;
+            font-size: 32px;
+            font-weight: 700;
         }
 
         .counter-row {
@@ -44,27 +45,29 @@
             align-items: center;
             gap: 15px;
             margin-bottom: 20px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
+            padding: 16px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 12px;
             transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.5);
         }
 
         .counter-row:hover {
-            background: #e9ecef;
+            box-shadow: 0 8px 16px rgba(30, 60, 114, 0.15);
+            transform: translateY(-2px);
         }
 
         .label {
-            font-weight: bold;
-            font-size: 20px;
-            color: #667eea;
+            font-weight: 700;
+            font-size: 22px;
+            color: #1e3c72;
             min-width: 40px;
         }
 
         .counter-value {
-            font-size: 24px;
-            font-weight: bold;
-            color: #333;
+            font-size: 26px;
+            font-weight: 700;
+            color: #1e3c72;
             min-width: 50px;
             text-align: center;
         }
@@ -77,42 +80,42 @@
 
         button {
             border: none;
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-weight: bold;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-weight: 700;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
             font-size: 14px;
         }
 
         .btn-up {
-            background: #28a745;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            min-width: 40px;
+            min-width: 44px;
         }
 
         .btn-up:hover {
-            background: #218838;
-            transform: scale(1.05);
+            transform: scale(1.12);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
         }
 
         .btn-down {
-            background: #dc3545;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             color: white;
-            min-width: 40px;
+            min-width: 44px;
         }
 
         .btn-down:hover {
-            background: #c82333;
-            transform: scale(1.05);
+            transform: scale(1.12);
+            box-shadow: 0 6px 20px rgba(245, 87, 108, 0.5);
         }
 
         .goal-section {
             margin-top: 30px;
             padding: 20px;
-            background: #f0f7ff;
-            border-radius: 8px;
-            border: 2px solid #667eea;
+            background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+            border-radius: 12px;
+            border: 2px solid #8ec5fc;
         }
 
         .goal-header {
@@ -123,32 +126,36 @@
         }
 
         .goal-title {
-            font-weight: bold;
-            color: #667eea;
+            font-weight: 700;
+            color: #1e3c72;
             font-size: 16px;
         }
 
         .goal-input {
-            padding: 6px 10px;
-            border: 1px solid #667eea;
-            border-radius: 4px;
+            padding: 8px 12px;
+            border: 2px solid #8ec5fc;
+            border-radius: 8px;
             font-size: 14px;
             width: 80px;
             text-align: center;
+            background: white;
+            font-weight: 700;
+            color: #1e3c72;
         }
 
         .goal-input:focus {
             outline: none;
-            border-color: #764ba2;
-            box-shadow: 0 0 5px rgba(102, 126, 234, 0.5);
+            border-color: #667eea;
+            box-shadow: 0 0 12px rgba(102, 126, 234, 0.4);
         }
 
         .progress-bar-container {
-            background: #e9ecef;
-            height: 30px;
-            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.7);
+            height: 32px;
+            border-radius: 10px;
             overflow: hidden;
             margin-bottom: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.8);
         }
 
         .progress-bar-fill {
@@ -159,69 +166,87 @@
             align-items: center;
             justify-content: center;
             color: white;
-            font-weight: bold;
+            font-weight: 700;
             font-size: 14px;
             min-width: 40px;
         }
 
         .progress-text {
             text-align: center;
-            color: #333;
-            font-weight: bold;
+            color: #1e3c72;
+            font-weight: 700;
             font-size: 14px;
         }
 
         .call-list-section {
             margin-top: 30px;
             padding: 20px;
-            background: #e8f5e9;
-            border-radius: 8px;
-            border: 2px solid #4caf50;
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            border-radius: 12px;
+            border: 2px solid #fcb69f;
         }
 
         .call-list-header {
-            font-weight: bold;
-            color: #2e7d32;
-            font-size: 16px;
-            margin-bottom: 15px;
+            font-weight: 700;
+            color: #c7254e;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .call-date-info {
+            text-align: center;
+            color: #a93442;
+            font-size: 12px;
+            margin-bottom: 12px;
+            font-weight: 600;
         }
 
         .stats-container {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
+            gap: 12px;
             margin-bottom: 15px;
-            padding: 10px;
-            background: #f1f8e9;
-            border-radius: 6px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
         }
 
         .stat-box {
             text-align: center;
-            padding: 10px;
-            background: white;
-            border-radius: 4px;
-            border-left: 4px solid #4caf50;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
         .stat-label {
             font-size: 11px;
-            color: #666;
+            color: rgba(255, 255, 255, 0.85);
             text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.5px;
         }
 
         .stat-number {
-            font-size: 24px;
-            font-weight: bold;
-            color: #2e7d32;
+            font-size: 32px;
+            font-weight: 700;
+            color: white;
+            margin-top: 6px;
+        }
+
+        .per-person-label {
+            font-weight: 700;
+            color: #c7254e;
+            font-size: 13px;
+            margin-bottom: 8px;
         }
 
         .per-person-stats {
             margin-bottom: 15px;
-            padding: 10px;
-            background: #f1f8e9;
-            border-radius: 6px;
-            max-height: 120px;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+            max-height: 130px;
             overflow-y: auto;
         }
 
@@ -229,32 +254,24 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 8px;
-            margin: 3px 0;
-            background: white;
-            border-radius: 4px;
-            border-left: 3px solid #4caf50;
+            padding: 10px;
+            margin: 4px 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
             font-size: 13px;
+            color: white;
+            font-weight: 600;
         }
 
         .person-name {
-            font-weight: 500;
-            color: #333;
+            font-weight: 700;
         }
 
         .person-count {
-            background: #e8f5e9;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-weight: bold;
-            color: #2e7d32;
-        }
-
-        .call-date-info {
-            text-align: center;
-            color: #558b2f;
-            font-size: 12px;
-            margin-bottom: 10px;
+            background: rgba(255, 255, 255, 0.3);
+            padding: 4px 12px;
+            border-radius: 14px;
+            font-weight: 700;
         }
 
         .call-input-group {
@@ -265,89 +282,107 @@
 
         .call-input {
             flex: 1;
-            padding: 10px;
-            border: 1px solid #4caf50;
-            border-radius: 6px;
+            padding: 12px;
+            border: 2px solid #fcb69f;
+            border-radius: 10px;
             font-size: 14px;
+            background: white;
+            font-weight: 500;
+        }
+
+        .call-input::placeholder {
+            color: #ccc;
         }
 
         .call-input:focus {
             outline: none;
-            border-color: #2e7d32;
-            box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+            border-color: #c7254e;
+            box-shadow: 0 0 12px rgba(199, 37, 78, 0.25);
         }
 
         .btn-submit {
-            padding: 10px 20px;
-            background: #4caf50;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            border-radius: 6px;
-            font-weight: bold;
+            border-radius: 10px;
+            font-weight: 700;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
         }
 
         .btn-submit:hover {
-            background: #2e7d32;
-            transform: scale(1.05);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.5);
         }
 
         .call-list {
             background: white;
-            border-radius: 6px;
-            padding: 10px;
-            max-height: 200px;
+            border-radius: 10px;
+            padding: 12px;
+            max-height: 220px;
             overflow-y: auto;
+            border: 1px solid rgba(252, 182, 159, 0.5);
         }
 
         .call-item {
-            padding: 10px;
-            margin: 5px 0;
-            background: #f1f8e9;
-            border-left: 4px solid #4caf50;
-            border-radius: 4px;
+            padding: 12px;
+            margin: 6px 0;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-left: 4px solid #667eea;
+            border-radius: 8px;
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
         }
 
         .call-item-name {
-            font-weight: 500;
-            color: #333;
+            font-weight: 700;
+            color: #1e3c72;
+            font-size: 14px;
         }
 
         .call-item-time {
             font-size: 12px;
             color: #666;
+            margin-top: 3px;
+        }
+
+        .call-item-stats {
+            font-size: 11px;
+            color: #888;
+            margin-top: 4px;
+            font-weight: 600;
         }
 
         .btn-delete {
-            padding: 4px 8px;
-            background: #f44336;
+            padding: 6px 10px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             color: white;
             border: none;
-            border-radius: 4px;
-            font-size: 12px;
+            border-radius: 6px;
+            font-size: 13px;
             cursor: pointer;
             transition: all 0.2s ease;
+            font-weight: 700;
         }
 
         .btn-delete:hover {
-            background: #d32f2f;
+            transform: scale(1.15);
+            box-shadow: 0 4px 12px rgba(245, 87, 108, 0.4);
         }
 
         .empty-message {
             text-align: center;
             color: #999;
-            padding: 20px;
+            padding: 24px;
             font-style: italic;
         }
 
         .loading {
             text-align: center;
             color: #999;
-            padding: 20px;
+            padding: 24px;
         }
 
         .reset-section {
@@ -356,39 +391,39 @@
         }
 
         .btn-reset {
-            background: #6c757d;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 10px 30px;
+            padding: 12px 32px;
             font-size: 16px;
-            min-width: 150px;
+            min-width: 160px;
+            border-radius: 10px;
+            font-weight: 700;
         }
 
         .btn-reset:hover {
-            background: #5a6268;
-            transform: scale(1.05);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.5);
         }
 
         .status {
             text-align: center;
             font-size: 12px;
             margin-top: 10px;
-            color: #666;
+            font-weight: 700;
         }
 
         .online {
             color: #28a745;
-            font-weight: bold;
         }
 
         .offline {
             color: #dc3545;
-            font-weight: bold;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Counter 📱</h1>
+        <h1>📱 Call Tracker</h1>
         
         <div class="counter-row">
             <div class="label">A</div>
@@ -431,23 +466,21 @@
         </div>
 
         <div class="call-list-section">
-            <div class="call-list-header">📞 Anrufliste (LIVE gemeinsam)</div>
+            <div class="call-list-header">📞 Live Anrufliste</div>
             <div class="call-date-info" id="call-date">Heute: <span id="today-date"></span></div>
 
-            <!-- Statistiken -->
             <div class="stats-container">
                 <div class="stat-box">
-                    <div class="stat-label">Gesamt Calls</div>
+                    <div class="stat-label">Gesamt A</div>
                     <div class="stat-number" id="total-calls">0</div>
                 </div>
                 <div class="stat-box">
-                    <div class="stat-label">Verschiedene Personen</div>
+                    <div class="stat-label">Personen</div>
                     <div class="stat-number" id="unique-persons">0</div>
                 </div>
             </div>
 
-            <!-- Pro Person -->
-            <div style="font-weight: bold; color: #2e7d32; font-size: 13px; margin-bottom: 5px;">Calls pro Person:</div>
+            <div class="per-person-label">Top Performer:</div>
             <div class="per-person-stats" id="per-person-stats">
                 <div style="text-align: center; color: #999; padding: 20px;">Noch keine Daten</div>
             </div>
@@ -464,16 +497,15 @@
         </div>
 
         <div class="reset-section">
-            <button class="btn-reset" onclick="resetAll()">Alles löschen</button>
+            <button class="btn-reset" onclick="resetAll()">Alles zurücksetzen</button>
         </div>
     </div>
 
-    <!-- Firebase SDK (neue Version) -->
+    <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
         import { getDatabase, ref, onValue, push, remove, set } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
 
-        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyA5S7hj8J9Gfdr3dGQ9IgHCx-_OlPipkoc",
             authDomain: "elb-calling.firebaseapp.com",
@@ -484,28 +516,20 @@
             appId: "1:382333390494:web:6c4236629ffcf808cb758f"
         };
 
-        // Firebase initialisieren
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         
         let callsRef = null;
-        let isConnected = false;
-
-        // Heute's Key
         const today = new Date().toISOString().split('T')[0];
         callsRef = ref(db, `calls/${today}`);
         
-        // Live Updates laden
         onValue(callsRef, (snapshot) => {
             renderCalls(snapshot.val());
         }, (error) => {
             console.error('Firebase Fehler:', error);
-            document.getElementById('call-list').innerHTML = `
-                <div class="empty-message">⚠️ Verbindungsfehler!</div>
-            `;
+            document.getElementById('call-list').innerHTML = `<div class="empty-message">⚠️ Verbindungsfehler!</div>`;
         });
 
-        // Global für die HTML onclick Handler
         window.addCall = function() {
             const input = document.getElementById('call-name-input');
             const name = input.value.trim();
@@ -521,7 +545,6 @@
                 minute: '2-digit'
             });
 
-            // Zu Firebase hinzufügen MIT A, E, T Werten
             const newCallRef = push(callsRef);
             set(newCallRef, {
                 name: name,
@@ -549,20 +572,15 @@
                 return;
             }
 
-            // Statistiken berechnen
             updateStats(callsData);
-
-            // Sortiert nach Zeit (neueste zuerst)
             const sorted = Object.entries(callsData).sort((a, b) => b[1].timestamp - a[1].timestamp);
 
             list.innerHTML = sorted.map(([id, call]) => `
                 <div class="call-item">
-                    <div>
+                    <div style="flex: 1;">
                         <div class="call-item-name">${call.name}</div>
                         <div class="call-item-time">${call.time} Uhr</div>
-                        <div style="font-size: 11px; color: #888; margin-top: 3px;">
-                            A: ${call.a || 0} | E: ${call.e || 0} | T: ${call.t || 0}
-                        </div>
+                        <div class="call-item-stats">A: ${call.a || 0} | E: ${call.e || 0} | T: ${call.t || 0}</div>
                     </div>
                     <button class="btn-delete" onclick="deleteCall('${id}')">✕</button>
                 </div>
@@ -570,20 +588,19 @@
         }
 
         function updateStats(callsData) {
-            // Gesamt Calls zählen
-            const totalCalls = Object.keys(callsData).length;
-            document.getElementById('total-calls').textContent = totalCalls;
+            let totalA = 0;
+            Object.values(callsData).forEach(call => {
+                totalA += (call.a || 0);
+            });
+            document.getElementById('total-calls').textContent = totalA;
 
-            // Pro Person zählen
             const perPerson = {};
             Object.values(callsData).forEach(call => {
                 perPerson[call.name] = (perPerson[call.name] || 0) + 1;
             });
 
-            // Unique Persons
             document.getElementById('unique-persons').textContent = Object.keys(perPerson).length;
 
-            // Sortiert nach Anzahl (meiste zuerst)
             const sorted = Object.entries(perPerson).sort((a, b) => b[1] - a[1]);
 
             const statsHtml = sorted.map(([name, count]) => `
@@ -596,13 +613,7 @@
             document.getElementById('per-person-stats').innerHTML = statsHtml;
         }
 
-        // Counter Logik
-        let counters = {
-            a: 0,
-            e: 0,
-            t: 0
-        };
-
+        let counters = { a: 0, e: 0, t: 0 };
         let goalValue = 100;
 
         window.addEventListener('load', function() {
