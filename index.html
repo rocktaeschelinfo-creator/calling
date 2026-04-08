@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Counter App</title>
+    <title>Counter App - Live</title>
     <style>
         * {
             margin: 0;
@@ -169,82 +169,119 @@
             font-size: 14px;
         }
 
-        .timer-section {
+        .call-list-section {
             margin-top: 30px;
             padding: 20px;
-            background: #fff3cd;
+            background: #e8f5e9;
             border-radius: 8px;
-            border: 2px solid #ffc107;
+            border: 2px solid #4caf50;
         }
 
-        .timer-header {
+        .call-list-header {
+            font-weight: bold;
+            color: #2e7d32;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+
+        .call-date-info {
+            text-align: center;
+            color: #558b2f;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+
+        .call-input-group {
             display: flex;
-            align-items: center;
             gap: 10px;
             margin-bottom: 15px;
-            justify-content: space-between;
         }
 
-        .timer-title {
-            font-weight: bold;
-            color: #856404;
-            font-size: 16px;
+        .call-input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #4caf50;
+            border-radius: 6px;
+            font-size: 14px;
         }
 
-        .timer-display {
-            text-align: center;
-            font-size: 48px;
-            font-weight: bold;
-            color: #ffc107;
-            font-family: 'Courier New', monospace;
-            margin: 20px 0;
-            min-height: 60px;
+        .call-input:focus {
+            outline: none;
+            border-color: #2e7d32;
+            box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
         }
 
-        .timer-buttons {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .btn-timer {
+        .btn-submit {
             padding: 10px 20px;
+            background: #4caf50;
+            color: white;
             border: none;
             border-radius: 6px;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.2s ease;
-            font-size: 14px;
-            color: white;
         }
 
-        .btn-timer-start {
-            background: #28a745;
-        }
-
-        .btn-timer-start:hover {
-            background: #218838;
+        .btn-submit:hover {
+            background: #2e7d32;
             transform: scale(1.05);
         }
 
-        .btn-timer-stop {
-            background: #ffc107;
+        .call-list {
+            background: white;
+            border-radius: 6px;
+            padding: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .call-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: #f1f8e9;
+            border-left: 4px solid #4caf50;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .call-item-name {
+            font-weight: 500;
             color: #333;
         }
 
-        .btn-timer-stop:hover {
-            background: #e0a800;
-            transform: scale(1.05);
+        .call-item-time {
+            font-size: 12px;
+            color: #666;
         }
 
-        .btn-timer-reset {
-            background: #dc3545;
+        .btn-delete {
+            padding: 4px 8px;
+            background: #f44336;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
         }
 
-        .btn-timer-reset:hover {
-            background: #c82333;
-            transform: scale(1.05);
+        .btn-delete:hover {
+            background: #d32f2f;
+        }
+
+        .empty-message {
+            text-align: center;
+            color: #999;
+            padding: 20px;
+            font-style: italic;
+        }
+
+        .loading {
+            text-align: center;
+            color: #999;
+            padding: 20px;
         }
 
         .reset-section {
@@ -264,11 +301,26 @@
             background: #5a6268;
             transform: scale(1.05);
         }
+
+        .status {
+            text-align: center;
+            font-size: 12px;
+            margin-top: 10px;
+            color: #666;
+        }
+
+        .online {
+            color: #28a745;
+        }
+
+        .offline {
+            color: #dc3545;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Counter</h1>
+        <h1>Counter 📱</h1>
         
         <div class="counter-row">
             <div class="label">A</div>
@@ -310,16 +362,19 @@
             </div>
         </div>
 
-        <div class="timer-section">
-            <div class="timer-header">
-                <div class="timer-title">A Druck Timer</div>
+        <div class="call-list-section">
+            <div class="call-list-header">📞 Anrufliste (LIVE gemeinsam)</div>
+            <div class="call-date-info" id="call-date">Heute: <span id="today-date"></span></div>
+            
+            <div class="call-input-group">
+                <input type="text" class="call-input" id="call-name-input" placeholder="Name eingeben...">
+                <button class="btn-submit" onclick="addCall()">Submit</button>
             </div>
-            <div class="timer-display" id="timer-display">0.0s</div>
-            <div class="timer-buttons">
-                <button class="btn-timer btn-timer-start" onclick="startTimer()">Starten</button>
-                <button class="btn-timer btn-timer-stop" onclick="stopTimer()">Stoppen</button>
-                <button class="btn-timer btn-timer-reset" onclick="resetTimer()">Zurücksetzen</button>
+
+            <div class="call-list" id="call-list">
+                <div class="loading">Verbindung wird hergestellt...</div>
             </div>
+            <div class="status" id="status"><span class="offline">● Offline</span></div>
         </div>
 
         <div class="reset-section">
@@ -327,7 +382,50 @@
         </div>
     </div>
 
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js"></script>
+
     <script>
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyA5S7hj8J9Gfdr3dGQ9IgHCx-_OlPipkoc",
+            authDomain: "elb-calling.firebaseapp.com",
+            databaseURL: "https://elb-calling-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "elb-calling",
+            storageBucket: "elb-calling.firebasestorage.app",
+            messagingSenderId: "382333390494",
+            appId: "1:382333390494:web:6c4236629ffcf808cb758f"
+        };
+
+        // Firebase initialisieren
+        let db = null;
+        let callsRef = null;
+        let isConnected = false;
+
+        try {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.database();
+            
+            // Heute's Key
+            const today = new Date().toISOString().split('T')[0];
+            callsRef = db.ref(`calls/${today}`);
+            
+            // Verbindungsstatus
+            db.ref('.info/connected').on('value', (snap) => {
+                isConnected = snap.val();
+                updateConnectionStatus();
+            });
+
+            // Live Updates laden
+            callsRef.on('value', (snapshot) => {
+                renderCalls(snapshot.val());
+            });
+        } catch (error) {
+            console.error('Firebase Fehler:', error);
+            showFirebaseError();
+        }
+
         let counters = {
             a: 0,
             e: 0,
@@ -335,19 +433,108 @@
         };
 
         let goalValue = 100;
-        let timerInterval = null;
-        let timerRunning = false;
-        let timerSeconds = 0;
+
+        window.addEventListener('load', function() {
+            updateTodayDate();
+            document.getElementById('call-name-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') addCall();
+            });
+        });
+
+        function updateTodayDate() {
+            const today = new Date().toLocaleDateString('de-DE', {
+                weekday: 'short',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            });
+            document.getElementById('today-date').textContent = today;
+        }
+
+        function updateConnectionStatus() {
+            const status = document.getElementById('status');
+            if (isConnected) {
+                status.innerHTML = '<span class="online">● Online</span>';
+            } else {
+                status.innerHTML = '<span class="offline">● Offline</span>';
+            }
+        }
+
+        function showFirebaseError() {
+            document.getElementById('call-list').innerHTML = `
+                <div class="empty-message">
+                    ⚠️ Firebase nicht konfiguriert!<br>
+                    <small>Siehe Code für Anleitung</small>
+                </div>
+            `;
+        }
+
+        function addCall() {
+            if (!isConnected) {
+                alert('Keine Verbindung! Versuche es später.');
+                return;
+            }
+
+            const input = document.getElementById('call-name-input');
+            const name = input.value.trim();
+            
+            if (name === '') {
+                alert('Bitte einen Namen eingeben!');
+                return;
+            }
+
+            const now = new Date();
+            const time = now.toLocaleTimeString('de-DE', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            // Zu Firebase hinzufügen
+            const callId = now.getTime();
+            callsRef.child(callId).set({
+                name: name,
+                time: time,
+                timestamp: now.getTime()
+            });
+
+            input.value = '';
+            input.focus();
+        }
+
+        function deleteCall(id) {
+            if (!isConnected) {
+                alert('Keine Verbindung!');
+                return;
+            }
+            callsRef.child(id).remove();
+        }
+
+        function renderCalls(callsData) {
+            const list = document.getElementById('call-list');
+            
+            if (!callsData || Object.keys(callsData).length === 0) {
+                list.innerHTML = '<div class="empty-message">Noch keine Anrufe heute</div>';
+                return;
+            }
+
+            // Sortiert nach Zeit (neueste zuerst)
+            const sorted = Object.entries(callsData).sort((a, b) => b[1].timestamp - a[1].timestamp);
+
+            list.innerHTML = sorted.map(([id, call]) => `
+                <div class="call-item">
+                    <div>
+                        <div class="call-item-name">${call.name}</div>
+                        <div class="call-item-time">${call.time} Uhr</div>
+                    </div>
+                    <button class="btn-delete" onclick="deleteCall('${id}')">✕</button>
+                </div>
+            `).join('');
+        }
 
         function incrementCounter(key) {
             counters[key]++;
             updateDisplay(key);
-            if (key === 'a') {
-                updateProgressBar();
-                // Automatisch Timer neu starten wenn A gedrückt wird
-                resetTimer();
-                startTimer();
-            }
+            if (key === 'a') updateProgressBar();
         }
 
         function decrementCounter(key) {
@@ -378,40 +565,12 @@
             document.getElementById('progress-goal').textContent = goalValue;
         }
 
-        function startTimer() {
-            if (!timerRunning) {
-                timerRunning = true;
-                timerInterval = setInterval(() => {
-                    timerSeconds += 0.1;
-                    updateTimerDisplay();
-                }, 100);
-            }
-        }
-
-        function stopTimer() {
-            if (timerRunning) {
-                timerRunning = false;
-                clearInterval(timerInterval);
-            }
-        }
-
-        function resetTimer() {
-            stopTimer();
-            timerSeconds = 0;
-            updateTimerDisplay();
-        }
-
-        function updateTimerDisplay() {
-            document.getElementById('timer-display').textContent = timerSeconds.toFixed(1) + 's';
-        }
-
         function resetAll() {
             counters = { a: 0, e: 0, t: 0 };
             updateDisplay('a');
             updateDisplay('e');
             updateDisplay('t');
             updateProgressBar();
-            resetTimer();
         }
     </script>
 </body>
