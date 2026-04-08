@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Counter App - Live</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        .counter-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .counter-row:hover {
+            background: #e9ecef;
+        }
+
+        .label {
+            font-weight: bold;
+            font-size: 20px;
+            color: #667eea;
+            min-width: 40px;
+        }
+
+        .counter-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 8px;
+            margin-left: auto;
+        }
+
+        button {
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 14px;
+        }
+
+        .btn-up {
+            background: #28a745;
+            color: white;
+            min-width: 40px;
+        }
+
+        .btn-up:hover {
+            background: #218838;
+            transform: scale(1.05);
+        }
+
+        .btn-down {
+            background: #dc3545;
+            color: white;
+            min-width: 40px;
+        }
+
+        .btn-down:hover {
+            background: #c82333;
+            transform: scale(1.05);
+        }
+
+        .goal-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f0f7ff;
+            border-radius: 8px;
+            border: 2px solid #667eea;
+        }
+
+        .goal-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .goal-title {
+            font-weight: bold;
+            color: #667eea;
+            font-size: 16px;
+        }
+
+        .goal-input {
+            padding: 6px 10px;
+            border: 1px solid #667eea;
+            border-radius: 4px;
+            font-size: 14px;
+            width: 80px;
+            text-align: center;
+        }
+
+        .goal-input:focus {
+            outline: none;
+            border-color: #764ba2;
+            box-shadow: 0 0 5px rgba(102, 126, 234, 0.5);
+        }
+
+        .progress-bar-container {
+            background: #e9ecef;
+            height: 30px;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+            min-width: 40px;
+        }
+
+        .progress-text {
+            text-align: center;
+            color: #333;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .call-list-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #e8f5e9;
+            border-radius: 8px;
+            border: 2px solid #4caf50;
+        }
+
+        .call-list-header {
+            font-weight: bold;
+            color: #2e7d32;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #f1f8e9;
+            border-radius: 6px;
+        }
+
+        .stat-box {
+            text-align: center;
+            padding: 10px;
+            background: white;
+            border-radius: 4px;
+            border-left: 4px solid #4caf50;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2e7d32;
+        }
+
+        .per-person-stats {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #f1f8e9;
+            border-radius: 6px;
+            max-height: 120px;
+            overflow-y: auto;
+        }
+
+        .person-stat {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            margin: 3px 0;
+            background: white;
+            border-radius: 4px;
+            border-left: 3px solid #4caf50;
+            font-size: 13px;
+        }
+
+        .person-name {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .person-count {
+            background: #e8f5e9;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: bold;
+            color: #2e7d32;
+        }
+
+        .call-date-info {
+            text-align: center;
+            color: #558b2f;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+
+        .call-input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .call-input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #4caf50;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .call-input:focus {
+            outline: none;
+            border-color: #2e7d32;
+            box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+        }
+
+        .btn-submit {
+            padding: 10px 20px;
+            background: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-submit:hover {
+            background: #2e7d32;
+            transform: scale(1.05);
+        }
+
+        .call-list {
+            background: white;
+            border-radius: 6px;
+            padding: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .call-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: #f1f8e9;
+            border-left: 4px solid #4caf50;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .call-item-name {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .call-item-time {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .btn-delete {
+            padding: 4px 8px;
+            background: #f44336;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-delete:hover {
+            background: #d32f2f;
+        }
+
+        .empty-message {
+            text-align: center;
+            color: #999;
+            padding: 20px;
+            font-style: italic;
+        }
+
+        .loading {
+            text-align: center;
+            color: #999;
+            padding: 20px;
+        }
+
+        .reset-section {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .btn-reset {
+            background: #6c757d;
+            color: white;
+            padding: 10px 30px;
+            font-size: 16px;
+            min-width: 150px;
+        }
+
+        .btn-reset:hover {
+            background: #5a6268;
+            transform: scale(1.05);
+        }
+
+        .status {
+            text-align: center;
+            font-size: 12px;
+            margin-top: 10px;
+            color: #666;
+        }
+
+        .online {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .offline {
+            color: #dc3545;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Counter 📱</h1>
+        
+        <div class="counter-row">
+            <div class="label">A</div>
+            <div class="counter-value" id="counter-a">0</div>
+            <div class="button-group">
+                <button class="btn-up" onclick="incrementCounter('a')">+</button>
+                <button class="btn-down" onclick="decrementCounter('a')">−</button>
+            </div>
+        </div>
+
+        <div class="counter-row">
+            <div class="label">E</div>
+            <div class="counter-value" id="counter-e">0</div>
+            <div class="button-group">
+                <button class="btn-up" onclick="incrementCounter('e')">+</button>
+                <button class="btn-down" onclick="decrementCounter('e')">−</button>
+            </div>
+        </div>
+
+        <div class="counter-row">
+            <div class="label">T</div>
+            <div class="counter-value" id="counter-t">0</div>
+            <div class="button-group">
+                <button class="btn-up" onclick="incrementCounter('t')">+</button>
+                <button class="btn-down" onclick="decrementCounter('t')">−</button>
+            </div>
+        </div>
+
+        <div class="goal-section">
+            <div class="goal-header">
+                <div class="goal-title">A Ziel:</div>
+                <input type="number" id="goal-input" class="goal-input" value="100" onchange="updateGoal()" min="1">
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar-fill" id="progress-bar" style="width: 0%">0%</div>
+            </div>
+            <div class="progress-text">
+                <span id="progress-current">0</span> / <span id="progress-goal">100</span>
+            </div>
+        </div>
+
+        <div class="call-list-section">
+            <div class="call-list-header">📞 Anrufliste (LIVE gemeinsam)</div>
+            <div class="call-date-info" id="call-date">Heute: <span id="today-date"></span></div>
+
+            <!-- Statistiken -->
+            <div class="stats-container">
+                <div class="stat-box">
+                    <div class="stat-label">Gesamt Calls</div>
+                    <div class="stat-number" id="total-calls">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Verschiedene Personen</div>
+                    <div class="stat-number" id="unique-persons">0</div>
+                </div>
+            </div>
+
+            <!-- Pro Person -->
+            <div style="font-weight: bold; color: #2e7d32; font-size: 13px; margin-bottom: 5px;">Calls pro Person:</div>
+            <div class="per-person-stats" id="per-person-stats">
+                <div style="text-align: center; color: #999; padding: 20px;">Noch keine Daten</div>
+            </div>
+            
+            <div class="call-input-group">
+                <input type="text" class="call-input" id="call-name-input" placeholder="Name eingeben...">
+                <button class="btn-submit" onclick="addCall()">Submit</button>
+            </div>
+
+            <div class="call-list" id="call-list">
+                <div class="loading">Verbindung wird hergestellt...</div>
+            </div>
+            <div class="status" id="status"><span class="offline">● Offline</span></div>
+        </div>
+
+        <div class="reset-section">
+            <button class="btn-reset" onclick="resetAll()">Alles löschen</button>
+        </div>
+    </div>
+
+    <!-- Firebase SDK (neue Version) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+        import { getDatabase, ref, onValue, push, remove, set } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
+
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyA5S7hj8J9Gfdr3dGQ9IgHCx-_OlPipkoc",
+            authDomain: "elb-calling.firebaseapp.com",
+            databaseURL: "https://elb-calling-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "elb-calling",
+            storageBucket: "elb-calling.firebasestorage.app",
+            messagingSenderId: "382333390494",
+            appId: "1:382333390494:web:6c4236629ffcf808cb758f"
+        };
+
+        // Firebase initialisieren
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        
+        let callsRef = null;
+        let isConnected = false;
+
+        // Heute's Key
+        const today = new Date().toISOString().split('T')[0];
+        callsRef = ref(db, `calls/${today}`);
+        
+        // Live Updates laden
+        onValue(callsRef, (snapshot) => {
+            renderCalls(snapshot.val());
+        }, (error) => {
+            console.error('Firebase Fehler:', error);
+            document.getElementById('call-list').innerHTML = `
+                <div class="empty-message">⚠️ Verbindungsfehler!</div>
+            `;
+        });
+
+        // Global für die HTML onclick Handler
+        window.addCall = function() {
+            const input = document.getElementById('call-name-input');
+            const name = input.value.trim();
+            
+            if (name === '') {
+                alert('Bitte einen Namen eingeben!');
+                return;
+            }
+
+            const now = new Date();
+            const time = now.toLocaleTimeString('de-DE', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            // Zu Firebase hinzufügen
+            const newCallRef = push(callsRef);
+            set(newCallRef, {
+                name: name,
+                time: time,
+                timestamp: now.getTime()
+            });
+
+            input.value = '';
+            input.focus();
+        };
+
+        window.deleteCall = function(id) {
+            remove(ref(db, `calls/${today}/${id}`));
+        };
+
+        function renderCalls(callsData) {
+            const list = document.getElementById('call-list');
+            
+            if (!callsData || Object.keys(callsData).length === 0) {
+                list.innerHTML = '<div class="empty-message">Noch keine Anrufe heute</div>';
+                updateStats({});
+                return;
+            }
+
+            // Statistiken berechnen
+            updateStats(callsData);
+
+            // Sortiert nach Zeit (neueste zuerst)
+            const sorted = Object.entries(callsData).sort((a, b) => b[1].timestamp - a[1].timestamp);
+
+            list.innerHTML = sorted.map(([id, call]) => `
+                <div class="call-item">
+                    <div>
+                        <div class="call-item-name">${call.name}</div>
+                        <div class="call-item-time">${call.time} Uhr</div>
+                    </div>
+                    <button class="btn-delete" onclick="deleteCall('${id}')">✕</button>
+                </div>
+            `).join('');
+        }
+
+        function updateStats(callsData) {
+            // Gesamt Calls zählen
+            const totalCalls = Object.keys(callsData).length;
+            document.getElementById('total-calls').textContent = totalCalls;
+
+            // Pro Person zählen
+            const perPerson = {};
+            Object.values(callsData).forEach(call => {
+                perPerson[call.name] = (perPerson[call.name] || 0) + 1;
+            });
+
+            // Unique Persons
+            document.getElementById('unique-persons').textContent = Object.keys(perPerson).length;
+
+            // Sortiert nach Anzahl (meiste zuerst)
+            const sorted = Object.entries(perPerson).sort((a, b) => b[1] - a[1]);
+
+            const statsHtml = sorted.map(([name, count]) => `
+                <div class="person-stat">
+                    <span class="person-name">${name}</span>
+                    <span class="person-count">${count}</span>
+                </div>
+            `).join('');
+
+            document.getElementById('per-person-stats').innerHTML = statsHtml;
+        }
+
+        // Counter Logik
+        let counters = {
+            a: 0,
+            e: 0,
+            t: 0
+        };
+
+        let goalValue = 100;
+
+        window.addEventListener('load', function() {
+            updateTodayDate();
+            document.getElementById('call-name-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') addCall();
+            });
+            document.getElementById('status').innerHTML = '<span class="online">● Online</span>';
+        });
+
+        window.updateTodayDate = function() {
+            const today = new Date().toLocaleDateString('de-DE', {
+                weekday: 'short',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            });
+            document.getElementById('today-date').textContent = today;
+        };
+
+        window.incrementCounter = function(key) {
+            counters[key]++;
+            updateDisplay(key);
+            if (key === 'a') updateProgressBar();
+        };
+
+        window.decrementCounter = function(key) {
+            counters[key]--;
+            updateDisplay(key);
+            if (key === 'a') updateProgressBar();
+        };
+
+        function updateDisplay(key) {
+            document.getElementById(`counter-${key}`).textContent = counters[key];
+        }
+
+        window.updateGoal = function() {
+            const newGoal = parseInt(document.getElementById('goal-input').value);
+            if (newGoal > 0) {
+                goalValue = newGoal;
+                updateProgressBar();
+            }
+        };
+
+        function updateProgressBar() {
+            const percentage = Math.min((counters.a / goalValue) * 100, 100);
+            const progressBar = document.getElementById('progress-bar');
+            progressBar.style.width = percentage + '%';
+            progressBar.textContent = Math.round(percentage) + '%';
+            
+            document.getElementById('progress-current').textContent = counters.a;
+            document.getElementById('progress-goal').textContent = goalValue;
+        }
+
+        window.resetAll = function() {
+            counters = { a: 0, e: 0, t: 0 };
+            updateDisplay('a');
+            updateDisplay('e');
+            updateDisplay('t');
+            updateProgressBar();
+        };
+    </script>
+</body>
+</html>
