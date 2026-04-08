@@ -521,12 +521,15 @@
                 minute: '2-digit'
             });
 
-            // Zu Firebase hinzufügen
+            // Zu Firebase hinzufügen MIT A, E, T Werten
             const newCallRef = push(callsRef);
             set(newCallRef, {
                 name: name,
                 time: time,
-                timestamp: now.getTime()
+                timestamp: now.getTime(),
+                a: counters.a,
+                e: counters.e,
+                t: counters.t
             });
 
             input.value = '';
@@ -557,6 +560,9 @@
                     <div>
                         <div class="call-item-name">${call.name}</div>
                         <div class="call-item-time">${call.time} Uhr</div>
+                        <div style="font-size: 11px; color: #888; margin-top: 3px;">
+                            A: ${call.a || 0} | E: ${call.e || 0} | T: ${call.t || 0}
+                        </div>
                     </div>
                     <button class="btn-delete" onclick="deleteCall('${id}')">✕</button>
                 </div>
