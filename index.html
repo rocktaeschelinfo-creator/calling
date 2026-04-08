@@ -28,6 +28,8 @@
             padding: 40px;
             max-width: 500px;
             width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
         h1 {
@@ -231,7 +233,7 @@
             background: white;
             border-radius: 6px;
             padding: 10px;
-            max-height: 300px;
+            max-height: 200px;
             overflow-y: auto;
         }
 
@@ -311,10 +313,12 @@
 
         .online {
             color: #28a745;
+            font-weight: bold;
         }
 
         .offline {
             color: #dc3545;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -382,11 +386,11 @@
         </div>
     </div>
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js"></script>
+    <!-- Firebase SDK (neue Version) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+        import { getDatabase, ref, onValue, push, remove, set } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
 
-    <script>
         // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyA5S7hj8J9Gfdr3dGQ9IgHCx-_OlPipkoc",
@@ -399,82 +403,28 @@
         };
 
         // Firebase initialisieren
-        let db = null;
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        
         let callsRef = null;
         let isConnected = false;
 
-        try {
-            firebase.initializeApp(firebaseConfig);
-            db = firebase.database();
-            
-            // Heute's Key
-            const today = new Date().toISOString().split('T')[0];
-            callsRef = db.ref(`calls/${today}`);
-            
-            // Verbindungsstatus
-            db.ref('.info/connected').on('value', (snap) => {
-                isConnected = snap.val();
-                updateConnectionStatus();
-            });
-
-            // Live Updates laden
-            callsRef.on('value', (snapshot) => {
-                renderCalls(snapshot.val());
-            });
-        } catch (error) {
+        // Heute's Key
+        const today = new Date().toISOString().split('T')[0];
+        callsRef = ref(db, `calls/${today}`);
+        
+        // Live Updates laden
+        onValue(callsRef, (snapshot) => {
+            renderCalls(snapshot.val());
+        }, (error) => {
             console.error('Firebase Fehler:', error);
-            showFirebaseError();
-        }
-
-        let counters = {
-            a: 0,
-            e: 0,
-            t: 0
-        };
-
-        let goalValue = 100;
-
-        window.addEventListener('load', function() {
-            updateTodayDate();
-            document.getElementById('call-name-input').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') addCall();
-            });
+            document.getElementById('call-list').innerHTML = `
+                <div class="empty-message">⚠️ Verbindungsfehler!</div>
+            `;
         });
 
-        function updateTodayDate() {
-            const today = new Date().toLocaleDateString('de-DE', {
-                weekday: 'short',
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit'
-            });
-            document.getElementById('today-date').textContent = today;
-        }
-
-        function updateConnectionStatus() {
-            const status = document.getElementById('status');
-            if (isConnected) {
-                status.innerHTML = '<span class="online">● Online</span>';
-            } else {
-                status.innerHTML = '<span class="offline">● Offline</span>';
-            }
-        }
-
-        function showFirebaseError() {
-            document.getElementById('call-list').innerHTML = `
-                <div class="empty-message">
-                    ⚠️ Firebase nicht konfiguriert!<br>
-                    <small>Siehe Code für Anleitung</small>
-                </div>
-            `;
-        }
-
-        function addCall() {
-            if (!isConnected) {
-                alert('Keine Verbindung! Versuche es später.');
-                return;
-            }
-
+        // Global für die HTML onclick Handler
+        window.addCall = function() {
             const input = document.getElementById('call-name-input');
             const name = input.value.trim();
             
@@ -490,8 +440,8 @@
             });
 
             // Zu Firebase hinzufügen
-            const callId = now.getTime();
-            callsRef.child(callId).set({
+            const newCallRef = push(callsRef);
+            set(newCallRef, {
                 name: name,
                 time: time,
                 timestamp: now.getTime()
@@ -499,15 +449,11 @@
 
             input.value = '';
             input.focus();
-        }
+        };
 
-        function deleteCall(id) {
-            if (!isConnected) {
-                alert('Keine Verbindung!');
-                return;
-            }
-            callsRef.child(id).remove();
-        }
+        window.deleteCall = function(id) {
+            remove(ref(db, `calls/${today}/${id}`));
+        };
 
         function renderCalls(callsData) {
             const list = document.getElementById('call-list');
@@ -531,29 +477,56 @@
             `).join('');
         }
 
-        function incrementCounter(key) {
+        // Counter Logik
+        let counters = {
+            a: 0,
+            e: 0,
+            t: 0
+        };
+
+        let goalValue = 100;
+
+        window.addEventListener('load', function() {
+            updateTodayDate();
+            document.getElementById('call-name-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') addCall();
+            });
+            document.getElementById('status').innerHTML = '<span class="online">● Online</span>';
+        });
+
+        window.updateTodayDate = function() {
+            const today = new Date().toLocaleDateString('de-DE', {
+                weekday: 'short',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            });
+            document.getElementById('today-date').textContent = today;
+        };
+
+        window.incrementCounter = function(key) {
             counters[key]++;
             updateDisplay(key);
             if (key === 'a') updateProgressBar();
-        }
+        };
 
-        function decrementCounter(key) {
+        window.decrementCounter = function(key) {
             counters[key]--;
             updateDisplay(key);
             if (key === 'a') updateProgressBar();
-        }
+        };
 
         function updateDisplay(key) {
             document.getElementById(`counter-${key}`).textContent = counters[key];
         }
 
-        function updateGoal() {
+        window.updateGoal = function() {
             const newGoal = parseInt(document.getElementById('goal-input').value);
             if (newGoal > 0) {
                 goalValue = newGoal;
                 updateProgressBar();
             }
-        }
+        };
 
         function updateProgressBar() {
             const percentage = Math.min((counters.a / goalValue) * 100, 100);
@@ -565,13 +538,13 @@
             document.getElementById('progress-goal').textContent = goalValue;
         }
 
-        function resetAll() {
+        window.resetAll = function() {
             counters = { a: 0, e: 0, t: 0 };
             updateDisplay('a');
             updateDisplay('e');
             updateDisplay('t');
             updateProgressBar();
-        }
+        };
     </script>
 </body>
 </html>
