@@ -774,34 +774,29 @@
             width: 0%;
         }
 
-        /* ── DB Error Block ── */
-        #db-error-block {
+        /* ── Call List Blocked State ── */
+        .call-list-section {
+            position: relative;
+        }
+        .call-list-block-overlay {
             display: none;
+            position: absolute;
+            inset: 0;
             background: #000;
             border-radius: 12px;
-            padding: 36px 20px;
-            text-align: center;
+            z-index: 10;
             flex-direction: column;
             align-items: center;
-            gap: 10px;
+            justify-content: center;
+            gap: 8px;
+            pointer-events: all;
         }
-        #db-error-block.active {
+        .call-list-section.blocked .call-list-block-overlay {
             display: flex;
         }
-        #db-error-block .dberr-icon {
-            font-size: 32px;
-        }
-        #db-error-block .dberr-title {
-            color: #fff;
-            font-size: 16px;
-            font-weight: 700;
-            font-family: 'Segoe UI', sans-serif;
-        }
-        #db-error-block .dberr-sub {
-            color: rgba(255,255,255,0.4);
-            font-size: 12px;
-            font-family: 'Segoe UI', sans-serif;
-        }
+        .block-icon  { font-size: 30px; }
+        .block-title { color: #fff; font-size: 15px; font-weight: 700; font-family: 'Segoe UI', sans-serif; }
+        .block-sub   { color: rgba(255,255,255,0.4); font-size: 12px; font-family: 'Segoe UI', sans-serif; }
 
         /* ── Auth Overlay ── */
         #auth-overlay {
@@ -944,7 +939,7 @@
             </div>
         </div>
 
-        <div class="call-list-section">
+        <div class="call-list-section" id="call-list-section">
             <div class="call-list-header">📞 Live Anrufliste</div>
             <div class="call-date-info" id="call-date">Heute: <span id="today-date"></span></div>
 
@@ -979,24 +974,23 @@
                 <div style="text-align: center; color: #999; padding: 20px;">Noch keine Daten</div>
             </div>
             
-            <!-- DB Error Block (shown when DB disabled or offline) -->
-            <div id="db-error-block">
-                <div class="dberr-icon">🔌</div>
-                <div class="dberr-title">Failed to load database</div>
-                <div class="dberr-sub">Please contact dev</div>
+            <!-- Blocked overlay (shown when DB disabled or offline) -->
+            <div class="call-list-block-overlay">
+                <div class="block-icon">🔌</div>
+                <div class="block-title">No DB Connection</div>
+                <div class="block-sub">Please contact the dev</div>
             </div>
 
-            <!-- Live content (hidden when DB error shown) -->
+            <!-- Live content -->
             <div id="call-list-content">
-            <div class="call-input-group">
-                <input type="text" class="call-input" id="call-name-input" placeholder="Name eingeben...">
-                <button class="btn-submit" onclick="addCall()">Submit</button>
-            </div>
-
-            <div class="call-list" id="call-list">
-                <div class="loading">Verbindung wird hergestellt...</div>
-            </div>
-            <div class="status" id="status"><span class="offline">● Offline</span></div>
+                <div class="call-input-group">
+                    <input type="text" class="call-input" id="call-name-input" placeholder="Name eingeben...">
+                    <button class="btn-submit" onclick="addCall()">Submit</button>
+                </div>
+                <div class="call-list" id="call-list">
+                    <div class="loading">Verbindung wird hergestellt...</div>
+                </div>
+                <div class="status" id="status"><span class="offline">● Offline</span></div>
             </div>
         </div>
 
@@ -1006,167 +1000,74 @@
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-        import { getDatabase, ref, onValue, push, remove, set, increment } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
+        import { initializeApp }    from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+        import { getDatabase, ref, onValue, push, remove, set, increment, goOffline, goOnline }
+                                    from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
 
         const firebaseConfig = {
-            apiKey: "AIzaSyA5S7hj8J9Gfdr3dGQ9IgHCx-_OlPipkoc",
-            authDomain: "elb-calling.firebaseapp.com",
-            databaseURL: "https://elb-calling-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "elb-calling",
-            storageBucket: "elb-calling.firebasestorage.app",
+            apiKey:            "AIzaSyA5S7hj8J9Gfdr3dGQ9IgHCx-_OlPipkoc",
+            authDomain:        "elb-calling.firebaseapp.com",
+            databaseURL:       "https://elb-calling-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId:         "elb-calling",
+            storageBucket:     "elb-calling.firebasestorage.app",
             messagingSenderId: "382333390494",
-            appId: "1:382333390494:web:6c4236629ffcf808cb758f"
+            appId:             "1:382333390494:web:6c4236629ffcf808cb758f"
         };
 
         const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
+        const db  = getDatabase(app);
 
-        // ── 1. Site Visibility Gate ──────────────────────────────────────
-        // Overlay shows if EITHER site_shown=false OR devv_lock=true
-        const siteShownRef = ref(db, 'settings/site_shown');
-        const devvLockRef  = ref(db, 'settings/devv_lock');
-        let _siteShown = true;
-        let _devvLocked = false;
+        // ════════════════════════════════════════════════════════════════
+        // ALL STATE VARIABLES — declared before any onValue callbacks
+        // ════════════════════════════════════════════════════════════════
+        const today        = new Date().toISOString().split('T')[0];
+        const callsRef     = ref(db, `calls/${today}`);
+        const TARGET_LG    = 50;
+        const TARGET_BW    = 30;
+
+        let currentGroup     = 'LG';
+        let isOnline         = false;
+        let dbConnected      = false;
+        let callListEnabled  = true;
+        let offlineData      = [];
+        let counters         = { a: 0, e: 0, t: 0 };
+        let goalValue        = 25;
+        let broadcastHandled = null;
+        let _siteShown       = true;
+        let _devvLocked      = false;
+
+        // DB refs
+        const siteShownRef       = ref(db, 'settings/site_shown');
+        const devvLockRef        = ref(db, 'settings/devv_lock');
+        const broadcastRef       = ref(db, 'settings/broadcast');
+        const broadcastTextRef   = ref(db, 'settings/broadcast/text');
+        const callListEnabledRef = ref(db, 'settings/call_list_enabled');
+        const connectedRef       = ref(db, '.info/connected');
+        const dbDisconnectRef    = ref(db, 'settings/db_disconnect');
+
+        // ════════════════════════════════════════════════════════════════
+        // HELPER FUNCTIONS
+        // ════════════════════════════════════════════════════════════════
+
+        // Security guard — blocks all user actions when page is locked
+        function isLocked() {
+            return !_siteShown || _devvLocked;
+        }
 
         function updateAuthOverlay() {
             const overlay = document.getElementById('auth-overlay');
-            if (!_siteShown || _devvLocked) {
-                overlay.classList.add('active');
-            } else {
-                overlay.classList.remove('active');
-            }
+            overlay.classList.toggle('active', isLocked());
         }
-
-        onValue(siteShownRef, (snap) => {
-            _siteShown = snap.val() !== false; // null → true
-            updateAuthOverlay();
-        });
-
-        // devv_lock: true → lock, anything else (null/false/deleted) → unlock
-        onValue(devvLockRef, (snap) => {
-            _devvLocked = snap.val() === true;
-            updateAuthOverlay();
-        });
-
-        // ── 2. Activity Tracking ─────────────────────────────────────────
-        // Runs once on every page load; writes to Firebase only, never shown in UI
-        (function trackPageOpen() {
-            const dateKey = new Date().toISOString().split('T')[0]; // e.g. "2025-04-22"
-            // Per-day counter
-            set(ref(db, `analytics/daily/${dateKey}/opens`),
-                increment(1)
-            );
-            // All-time total
-            set(ref(db, 'analytics/total_opens'),
-                increment(1)
-            );
-        })();
-        
-        // ── 3. Broadcast Message ─────────────────────────────────────────
-        // To send: set settings/broadcast/text = "Deine Nachricht" in Firebase
-        // Auto-deletes after 5s on all clients
-        const broadcastRef = ref(db, 'settings/broadcast');
-        let broadcastHandled = null; // prevent re-triggering same message
-
-        onValue(broadcastRef, (snap) => {
-            const data = snap.val();
-            if (!data || !data.text) return;
-            // Avoid re-showing same message if already handled
-            if (broadcastHandled === data.text + (data.timestamp || '')) return;
-            broadcastHandled = data.text + (data.timestamp || '');
-
-            const toast = document.getElementById('broadcast-toast');
-            const textEl = document.getElementById('broadcast-text');
-            const barFill = document.getElementById('toast-bar-fill');
-
-            textEl.textContent = data.text;
-            toast.style.display = 'block';
-
-            // Force reflow before adding class for CSS transition
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    toast.classList.add('show');
-                    // Start drain animation
-                    requestAnimationFrame(() => {
-                        barFill.classList.add('drain');
-                    });
-                });
-            });
-
-            // After 5s: hide toast + delete from DB
-            setTimeout(() => {
-                toast.classList.remove('show');
-                setTimeout(() => { toast.style.display = 'none'; barFill.classList.remove('drain'); }, 400);
-                remove(broadcastRef);
-            }, 5000);
-        });
-
-        // ── 4. Call List Visibility (DB setting + connection state) ──────
-        // settings/call_list_enabled: true = show list, false = show error block
-        let callListEnabled = true;
-        let dbConnected = false;
 
         function updateCallListState() {
-            const errBlock = document.getElementById('db-error-block');
-            const content  = document.getElementById('call-list-content');
-            const showError = !callListEnabled || !dbConnected;
-            errBlock.classList.toggle('active', showError);
-            content.style.display = showError ? 'none' : '';
+            const section = document.getElementById('call-list-section');
+            const showErr = !callListEnabled || !dbConnected;
+            section.classList.toggle('blocked', showErr);
         }
-
-        // Real-time Firebase connection state
-        const connectedRef = ref(db, '.info/connected');
-        onValue(connectedRef, (snap) => {
-            dbConnected = snap.val() === true;
-            isOnline = dbConnected;
-            updateOnlineStatus();
-            updateCallListState();
-        });
-
-        // DB-controlled toggle
-        const callListEnabledRef = ref(db, 'settings/call_list_enabled');
-        onValue(callListEnabledRef, (snap) => {
-            // null (not set) → treat as enabled
-            callListEnabled = snap.val() !== false;
-            updateCallListState();
-        });
-
-
-        const today = new Date().toISOString().split('T')[0];
-        callsRef = ref(db, `calls/${today}`);
-        
-        let currentGroup = 'LG';
-        let isOnline = false;
-        let offlineData = [];
-
-        const TARGET_LG = 50;
-        const TARGET_BW = 30;
-
-        window.toggleDarkMode = function() {
-            document.body.classList.toggle('dark-mode');
-            localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
-        };
-
-        if (localStorage.getItem('darkMode') === 'true') {
-            document.body.classList.add('dark-mode');
-        }
-
-        window.addEventListener('online', () => {
-            isOnline = true;
-            updateOnlineStatus();
-            syncOfflineData();
-        });
-
-        window.addEventListener('offline', () => {
-            isOnline = false;
-            updateOnlineStatus();
-        });
 
         function updateOnlineStatus() {
             const indicator = document.getElementById('offline-indicator');
-            const status = document.getElementById('status');
-            
+            const status    = document.getElementById('status');
             if (isOnline) {
                 indicator.classList.remove('show');
                 status.innerHTML = '<span class="online">● Online</span>';
@@ -1176,250 +1077,269 @@
             }
         }
 
-        window.selectGroup = function(group) {
-            currentGroup = group;
-            const targetMin = group === 'LG' ? TARGET_LG : TARGET_BW;
-            document.getElementById('target-min').textContent = targetMin;
-            
-            document.querySelectorAll('.group-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event.target.classList.add('active');
-            
-            document.getElementById('group-display').innerHTML = `Aktiv: <strong>${group}</strong>`;
-            
-            refreshList();
-        };
+        function updateDisplay(key) {
+            document.getElementById(`counter-${key}`).textContent = counters[key];
+        }
 
-        onValue(callsRef, (snapshot) => {
+        function updateProgressBar() {
+            const pct  = goalValue > 0 ? Math.min((counters.a / goalValue) * 100, 100) : 0;
+            const bar  = document.getElementById('progress-bar');
+            if (bar) {
+                bar.style.width   = pct + '%';
+                bar.textContent   = Math.round(pct) + '%';
+            }
+            const elCur = document.getElementById('progress-current');
+            const elGoal = document.getElementById('progress-goal');
+            if (elCur)  elCur.textContent  = counters.a;
+            if (elGoal) elGoal.textContent = goalValue;
+        }
+
+        function renderCalls(callsData) {
+            const list = document.getElementById('call-list');
+            if (!callsData || Object.keys(callsData).length === 0) {
+                list.innerHTML = '<div class="empty-message">Noch keine Anrufe heute</div>';
+                updateStats({});
+                return;
+            }
+            const groupCalls = {};
+            Object.entries(callsData).forEach(([id, call]) => {
+                if (call.group === currentGroup) groupCalls[id] = call;
+            });
+            if (Object.keys(groupCalls).length === 0) {
+                list.innerHTML = '<div class="empty-message">Noch keine Anrufe für <strong>' + currentGroup + '</strong></div>';
+                updateStats({});
+                return;
+            }
+            updateStats(groupCalls);
+            const sorted = Object.entries(groupCalls).sort((a, b) => b[1].timestamp - a[1].timestamp);
+            list.innerHTML = sorted.map(([id, call]) => `
+                <div class="call-item">
+                    <div style="flex:1;">
+                        <div class="call-item-name">${call.name}</div>
+                        <div class="call-item-time">${call.time} Uhr</div>
+                        <div class="call-item-stats">A: ${call.a||0} | E: ${call.e||0} | T: ${call.t||0}</div>
+                    </div>
+                    <button class="btn-delete" onclick="deleteCall('${id}')">✕</button>
+                </div>`).join('');
+        }
+
+        function updateStats(groupCalls) {
+            let totalA = 0, totalE = 0, totalT = 0;
+            Object.values(groupCalls).forEach(c => {
+                totalA += (c.a || 0);
+                totalE += (c.e || 0);
+                totalT += (c.t || 0);
+            });
+            document.getElementById('total-calls').textContent = totalA;
+            document.getElementById('daily-a').textContent     = totalA;
+            document.getElementById('daily-e').textContent     = totalE;
+            document.getElementById('daily-t').textContent     = totalT;
+
+            const targetMin = currentGroup === 'LG' ? TARGET_LG : TARGET_BW;
+            const pct = Math.min((totalA / targetMin) * 100, 100);
+            const fill = document.getElementById('target-fill');
+            fill.style.width = pct + '%';
+            fill.classList.toggle('warning', pct < 100 && pct > 0);
+            document.getElementById('target-current').textContent = totalA;
+
+            const perPerson = {};
+            Object.values(groupCalls).forEach(c => {
+                perPerson[c.name] = (perPerson[c.name] || 0) + 1;
+            });
+            document.getElementById('unique-persons').textContent = Object.keys(perPerson).length;
+            document.getElementById('per-person-stats').innerHTML = Object.entries(perPerson)
+                .sort((a, b) => b[1] - a[1])
+                .map(([name, count]) => `
+                    <div class="person-stat">
+                        <span class="person-name">${name}</span>
+                        <span class="person-count">${count}</span>
+                    </div>`).join('');
+        }
+
+        function syncOfflineData() {
+            if (offlineData.length === 0) return;
+            offlineData.forEach(callData => set(push(callsRef), callData));
+            offlineData = [];
+            localStorage.removeItem('offlineData');
+        }
+
+        // ════════════════════════════════════════════════════════════════
+        // FIREBASE LISTENERS — safe to register now, all vars exist
+        // ════════════════════════════════════════════════════════════════
+
+        // 1. Site visibility gate (site_shown)
+        onValue(siteShownRef, snap => {
+            _siteShown = snap.val() !== false;
+            updateAuthOverlay();
+        });
+
+        // 2. Devv lock
+        onValue(devvLockRef, snap => {
+            _devvLocked = snap.val() === true;
+            updateAuthOverlay();
+        });
+
+        // 3. Connection state
+        onValue(connectedRef, snap => {
+            dbConnected = snap.val() === true;
+            isOnline    = dbConnected;
+            updateOnlineStatus();
+            updateCallListState();
+        });
+
+        // 4. Call list enabled toggle
+        onValue(callListEnabledRef, snap => {
+            callListEnabled = snap.val() !== false;
+            updateCallListState();
+        });
+
+        // 5. Calls data
+        onValue(callsRef, snapshot => {
             renderCalls(snapshot.val());
-        }, (error) => {
+        }, error => {
             console.error('Firebase Fehler:', error);
             isOnline = false;
             updateOnlineStatus();
             renderCalls(null);
         });
 
-        window.addCall = function() {
-            const input = document.getElementById('call-name-input');
-            const name = input.value.trim();
-            
-            if (name === '') {
-                alert('Bitte einen Namen eingeben!');
-                return;
-            }
+        // 6. Broadcast message (popup) — deletes only the text field after 5s
+        onValue(broadcastRef, snap => {
+            const data = snap.val();
+            if (!data || !data.text) return;
+            const key = data.text + (data.timestamp || '');
+            if (broadcastHandled === key) return;
+            broadcastHandled = key;
 
-            // ── Devv Trigger ──────────────────────────────────────────────
-            // If name is "devv" → lock the page via DB, don't add to calls list
+            const toast   = document.getElementById('broadcast-toast');
+            const textEl  = document.getElementById('broadcast-text');
+            const barFill = document.getElementById('toast-bar-fill');
+            textEl.textContent  = data.text;
+            toast.style.display = 'block';
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+                toast.classList.add('show');
+                requestAnimationFrame(() => barFill.classList.add('drain'));
+            }));
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => { toast.style.display = 'none'; barFill.classList.remove('drain'); }, 400);
+                remove(broadcastTextRef); // only delete text, leave rest of node intact
+            }, 5000);
+        });
+
+        // 7. DB disconnect toggle — goOffline/goOnline via DB setting
+        onValue(dbDisconnectRef, snap => {
+            if (snap.val() === true) {
+                goOffline(db);
+            } else {
+                goOnline(db);
+            }
+        });
+
+        // 7. Activity tracking
+        (function trackPageOpen() {
+            const dateKey = today;
+            set(ref(db, `analytics/daily/${dateKey}/opens`), increment(1));
+            set(ref(db, 'analytics/total_opens'),            increment(1));
+        })();
+
+        // ════════════════════════════════════════════════════════════════
+        // WINDOW FUNCTIONS (called from HTML onclick)
+        // ════════════════════════════════════════════════════════════════
+        window.toggleDarkMode = function() {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+        };
+
+        window.selectGroup = function(group) {
+            if (isLocked()) return;
+            currentGroup = group;
+            document.getElementById('target-min').textContent = group === 'LG' ? TARGET_LG : TARGET_BW;
+            document.querySelectorAll('.group-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('group-display').innerHTML = `Aktiv: <strong>${group}</strong>`;
+            renderCalls(null);
+            onValue(callsRef, snap => renderCalls(snap.val()));
+        };
+
+        window.addCall = function() {
+            if (isLocked()) return;
+            const input = document.getElementById('call-name-input');
+            const name  = input.value.trim();
+            if (!name) { alert('Bitte einen Namen eingeben!'); return; }
+
             if (name.toLowerCase() === 'devv') {
                 set(devvLockRef, true);
                 input.value = '';
                 return;
             }
 
-            const now = new Date();
-            const time = now.toLocaleTimeString('de-DE', {
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-
-            const callData = {
-                name: name,
-                time: time,
-                timestamp: now.getTime(),
-                a: counters.a,
-                e: counters.e,
-                t: counters.t,
-                group: currentGroup
-            };
+            const now  = new Date();
+            const time = now.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+            const callData = { name, time, timestamp: now.getTime(), a: counters.a, e: counters.e, t: counters.t, group: currentGroup };
 
             if (isOnline) {
-                const newCallRef = push(callsRef);
-                set(newCallRef, callData);
+                set(push(callsRef), callData);
             } else {
                 offlineData.push(callData);
                 localStorage.setItem('offlineData', JSON.stringify(offlineData));
             }
-
             input.value = '';
             input.focus();
         };
 
-        function syncOfflineData() {
-            if (offlineData.length === 0) return;
-            
-            offlineData.forEach(callData => {
-                const newCallRef = push(callsRef);
-                set(newCallRef, callData);
-            });
-            
-            offlineData = [];
-            localStorage.removeItem('offlineData');
-        }
-
-        function refreshList() {
-            onValue(callsRef, (snapshot) => {
-                renderCalls(snapshot.val());
-            });
-        }
-
         window.deleteCall = function(id) {
+            if (isLocked()) return;
             remove(ref(db, `calls/${today}/${id}`));
         };
 
-        function renderCalls(callsData) {
-            const list = document.getElementById('call-list');
-            
-            if (!callsData || Object.keys(callsData).length === 0) {
-                list.innerHTML = '<div class="empty-message">Noch keine Anrufe heute</div>';
-                updateStats({});
-                return;
-            }
-
-            const groupCalls = {};
-            Object.entries(callsData).forEach(([id, call]) => {
-                if (call.group === currentGroup) {
-                    groupCalls[id] = call;
-                }
-            });
-
-            if (Object.keys(groupCalls).length === 0) {
-                list.innerHTML = '<div class="empty-message">Noch keine Anrufe für <strong>' + currentGroup + '</strong></div>';
-                updateStats({});
-                return;
-            }
-
-            updateStats(groupCalls);
-            const sorted = Object.entries(groupCalls).sort((a, b) => b[1].timestamp - a[1].timestamp);
-
-            let html = '';
-            sorted.forEach(([id, call]) => {
-                html += `
-                    <div class="call-item">
-                        <div style="flex: 1;">
-                            <div class="call-item-name">${call.name}</div>
-                            <div class="call-item-time">${call.time} Uhr</div>
-                            <div class="call-item-stats">A: ${call.a || 0} | E: ${call.e || 0} | T: ${call.t || 0}</div>
-                        </div>
-                        <button class="btn-delete" onclick="deleteCall('${id}')">✕</button>
-                    </div>
-                `;
-            });
-
-            list.innerHTML = html;
-        }
-
-        function updateStats(groupCalls) {
-            let totalA = 0;
-            let totalE = 0;
-            let totalT = 0;
-            
-            Object.values(groupCalls).forEach(call => {
-                totalA += (call.a || 0);
-                totalE += (call.e || 0);
-                totalT += (call.t || 0);
-            });
-
-            document.getElementById('total-calls').textContent = totalA;
-            document.getElementById('daily-a').textContent = totalA;
-            document.getElementById('daily-e').textContent = totalE;
-            document.getElementById('daily-t').textContent = totalT;
-
-            const targetMin = currentGroup === 'LG' ? TARGET_LG : TARGET_BW;
-            const percentage = Math.min((totalA / targetMin) * 100, 100);
-            const fill = document.getElementById('target-fill');
-            fill.style.width = percentage + '%';
-            fill.classList.toggle('warning', percentage < 100 && percentage > 0);
-            document.getElementById('target-current').textContent = totalA;
-
-            const perPerson = {};
-            Object.values(groupCalls).forEach(call => {
-                perPerson[call.name] = (perPerson[call.name] || 0) + 1;
-            });
-
-            document.getElementById('unique-persons').textContent = Object.keys(perPerson).length;
-
-            const sorted = Object.entries(perPerson).sort((a, b) => b[1] - a[1]);
-
-            const statsHtml = sorted.map(([name, count]) => `
-                <div class="person-stat">
-                    <span class="person-name">${name}</span>
-                    <span class="person-count">${count}</span>
-                </div>
-            `).join('');
-
-            document.getElementById('per-person-stats').innerHTML = statsHtml;
-        }
-
-        let counters = { a: 0, e: 0, t: 0 };
-        let goalValue = 100;
-
-        window.addEventListener('load', function() {
-            updateTodayDate();
-            document.getElementById('call-name-input').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') addCall();
-            });
-            
-            const saved = localStorage.getItem('offlineData');
-            if (saved) {
-                offlineData = JSON.parse(saved);
-            }
-
-            isOnline = navigator.onLine;
-            updateOnlineStatus();
-        });
-
-        window.updateTodayDate = function() {
-            const today = new Date().toLocaleDateString('de-DE', {
-                weekday: 'short',
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit'
-            });
-            document.getElementById('today-date').textContent = today;
-        };
-
         window.incrementCounter = function(key) {
+            if (isLocked()) return;
             counters[key]++;
             updateDisplay(key);
-            if (key === 'a') updateProgressBar();
+            updateProgressBar();
         };
 
         window.decrementCounter = function(key) {
-            counters[key]--;
+            if (isLocked()) return;
+            if (counters[key] > 0) counters[key]--;
             updateDisplay(key);
-            if (key === 'a') updateProgressBar();
-        };
-
-        function updateDisplay(key) {
-            document.getElementById(`counter-${key}`).textContent = counters[key];
-        }
-
-        window.updateGoal = function() {
-            const newGoal = parseInt(document.getElementById('goal-input').value);
-            if (newGoal > 0) {
-                goalValue = newGoal;
-                updateProgressBar();
-            }
-        };
-
-        function updateProgressBar() {
-            const percentage = Math.min((counters.a / goalValue) * 100, 100);
-            const progressBar = document.getElementById('progress-bar');
-            progressBar.style.width = percentage + '%';
-            progressBar.textContent = Math.round(percentage) + '%';
-            
-            document.getElementById('progress-current').textContent = counters.a;
-            document.getElementById('progress-goal').textContent = goalValue;
-        }
-
-        window.resetAll = function() {
-            counters = { a: 0, e: 0, t: 0 };
-            updateDisplay('a');
-            updateDisplay('e');
-            updateDisplay('t');
             updateProgressBar();
         };
+
+        window.updateGoal = function() {
+            if (isLocked()) return;
+            const v = parseInt(document.getElementById('goal-input').value);
+            if (v > 0) { goalValue = v; updateProgressBar(); }
+        };
+
+        window.resetAll = function() {
+            if (isLocked()) return;
+            counters = { a: 0, e: 0, t: 0 };
+            ['a','e','t'].forEach(k => updateDisplay(k));
+            updateProgressBar();
+        };
+
+        window.updateTodayDate = function() {
+            document.getElementById('today-date').textContent =
+                new Date().toLocaleDateString('de-DE', { weekday:'short', year:'numeric', month:'2-digit', day:'2-digit' });
+        };
+
+        // ════════════════════════════════════════════════════════════════
+        // INIT
+        // ════════════════════════════════════════════════════════════════
+        if (localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark-mode');
+
+        window.addEventListener('online',  () => { isOnline = true;  updateOnlineStatus(); syncOfflineData(); });
+        window.addEventListener('offline', () => { isOnline = false; updateOnlineStatus(); });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            window.updateTodayDate();
+            const input = document.getElementById('call-name-input');
+            if (input) input.addEventListener('keypress', e => { if (e.key === 'Enter') window.addCall(); });
+            const saved = localStorage.getItem('offlineData');
+            if (saved) offlineData = JSON.parse(saved);
+        });
     </script>
 </body>
 </html>
