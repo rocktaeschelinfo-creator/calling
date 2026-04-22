@@ -722,6 +722,38 @@
             color: #dc3545;
         }
 
+        /* ── Auth Overlay ── */
+        #auth-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 99999;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        #auth-overlay.active {
+            display: flex;
+        }
+
+        #auth-overlay h2 {
+            color: #fff;
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-align: center;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        #auth-overlay p {
+            color: rgba(255,255,255,0.45);
+            font-size: 14px;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
         @media (max-width: 600px) {
             .container {
                 padding: 16px;
@@ -748,6 +780,12 @@
     </style>
 </head>
 <body>
+    <!-- Auth / Maintenance Gate -->
+    <div id="auth-overlay">
+        <h2>OOPs failed to Auth</h2>
+        <p>error code: 403</p>
+    </div>
+
     <div class="container">
         <div class="header-top">
             <h1>📱 Call Tracker</h1>
@@ -808,7 +846,7 @@
         <div class="goal-section">
             <div class="goal-header">
                 <div class="goal-title">Persönliches Ziel:</div>
-                <input type="number" id="goal-input" class="goal-input" value="100" onchange="updateGoal()" min="1">
+                <input type="number" id="goal-input" class="goal-input" value="25" onchange="updateGoal()" min="1">
             </div>
             <div class="progress-bar-container">
                 <div class="progress-bar-fill" id="progress-bar" style="width: 0%">0%</div>
@@ -871,7 +909,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-        import { getDatabase, ref, onValue, push, remove, set } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
+        import { getDatabase, ref, onValue, push, remove, set, increment } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA5S7hj8J9Gfdr3dGQ9IgHCx-_OlPipkoc",
@@ -885,6 +923,33 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
+
+        // ── 1. Site Visibility Gate ──────────────────────────────────────
+        const siteShownRef = ref(db, 'settings/site_shown');
+        onValue(siteShownRef, (snap) => {
+            const shown = snap.val();
+            const overlay = document.getElementById('auth-overlay');
+            // null (not set yet) → treat as true (show site)
+            if (shown === false) {
+                overlay.classList.add('active');
+            } else {
+                overlay.classList.remove('active');
+            }
+        });
+
+        // ── 2. Activity Tracking ─────────────────────────────────────────
+        // Runs once on every page load; writes to Firebase only, never shown in UI
+        (function trackPageOpen() {
+            const dateKey = new Date().toISOString().split('T')[0]; // e.g. "2025-04-22"
+            // Per-day counter
+            set(ref(db, `analytics/daily/${dateKey}/opens`),
+                increment(1)
+            );
+            // All-time total
+            set(ref(db, 'analytics/total_opens'),
+                increment(1)
+            );
+        })();
         
         let callsRef = null;
         const today = new Date().toISOString().split('T')[0];
