@@ -722,6 +722,87 @@
             color: #dc3545;
         }
 
+        /* ── Broadcast Toast ── */
+        #broadcast-toast {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-80px);
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #fff;
+            padding: 14px 28px;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 700;
+            font-family: 'Segoe UI', sans-serif;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            z-index: 99998;
+            max-width: 90vw;
+            text-align: center;
+            border: 2px solid rgba(255,255,255,0.2);
+            transition: transform 0.4s cubic-bezier(.175,.885,.32,1.275), opacity 0.4s ease;
+            opacity: 0;
+        }
+        #broadcast-toast.show {
+            display: block;
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+        #broadcast-toast .toast-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.7;
+            margin-bottom: 4px;
+        }
+        #broadcast-toast .toast-bar {
+            height: 3px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 2px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        #broadcast-toast .toast-bar-fill {
+            height: 100%;
+            width: 100%;
+            background: #fff;
+            border-radius: 2px;
+            transition: width 5s linear;
+        }
+        #broadcast-toast .toast-bar-fill.drain {
+            width: 0%;
+        }
+
+        /* ── DB Error Block ── */
+        #db-error-block {
+            display: none;
+            background: #000;
+            border-radius: 12px;
+            padding: 36px 20px;
+            text-align: center;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        #db-error-block.active {
+            display: flex;
+        }
+        #db-error-block .dberr-icon {
+            font-size: 32px;
+        }
+        #db-error-block .dberr-title {
+            color: #fff;
+            font-size: 16px;
+            font-weight: 700;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        #db-error-block .dberr-sub {
+            color: rgba(255,255,255,0.4);
+            font-size: 12px;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
         /* ── Auth Overlay ── */
         #auth-overlay {
             display: none;
@@ -780,6 +861,13 @@
     </style>
 </head>
 <body>
+    <!-- Broadcast Toast -->
+    <div id="broadcast-toast">
+        <div class="toast-label">📢 Nachricht</div>
+        <div id="broadcast-text"></div>
+        <div class="toast-bar"><div class="toast-bar-fill" id="toast-bar-fill"></div></div>
+    </div>
+
     <!-- Auth / Maintenance Gate -->
     <div id="auth-overlay">
         <h2>OOPs failed to Auth</h2>
@@ -891,6 +979,15 @@
                 <div style="text-align: center; color: #999; padding: 20px;">Noch keine Daten</div>
             </div>
             
+            <!-- DB Error Block (shown when DB disabled or offline) -->
+            <div id="db-error-block">
+                <div class="dberr-icon">🔌</div>
+                <div class="dberr-title">Failed to load database</div>
+                <div class="dberr-sub">Please contact dev</div>
+            </div>
+
+            <!-- Live content (hidden when DB error shown) -->
+            <div id="call-list-content">
             <div class="call-input-group">
                 <input type="text" class="call-input" id="call-name-input" placeholder="Name eingeben...">
                 <button class="btn-submit" onclick="addCall()">Submit</button>
@@ -900,6 +997,7 @@
                 <div class="loading">Verbindung wird hergestellt...</div>
             </div>
             <div class="status" id="status"><span class="offline">● Offline</span></div>
+            </div>
         </div>
 
         <div class="reset-section">
@@ -925,16 +1023,30 @@
         const db = getDatabase(app);
 
         // ── 1. Site Visibility Gate ──────────────────────────────────────
+        // Overlay shows if EITHER site_shown=false OR devv_lock=true
         const siteShownRef = ref(db, 'settings/site_shown');
-        onValue(siteShownRef, (snap) => {
-            const shown = snap.val();
+        const devvLockRef  = ref(db, 'settings/devv_lock');
+        let _siteShown = true;
+        let _devvLocked = false;
+
+        function updateAuthOverlay() {
             const overlay = document.getElementById('auth-overlay');
-            // null (not set yet) → treat as true (show site)
-            if (shown === false) {
+            if (!_siteShown || _devvLocked) {
                 overlay.classList.add('active');
             } else {
                 overlay.classList.remove('active');
             }
+        }
+
+        onValue(siteShownRef, (snap) => {
+            _siteShown = snap.val() !== false; // null → true
+            updateAuthOverlay();
+        });
+
+        // devv_lock: true → lock, anything else (null/false/deleted) → unlock
+        onValue(devvLockRef, (snap) => {
+            _devvLocked = snap.val() === true;
+            updateAuthOverlay();
         });
 
         // ── 2. Activity Tracking ─────────────────────────────────────────
@@ -951,7 +1063,76 @@
             );
         })();
         
-        let callsRef = null;
+        // ── 3. Broadcast Message ─────────────────────────────────────────
+        // To send: set settings/broadcast/text = "Deine Nachricht" in Firebase
+        // Auto-deletes after 5s on all clients
+        const broadcastRef = ref(db, 'settings/broadcast');
+        let broadcastHandled = null; // prevent re-triggering same message
+
+        onValue(broadcastRef, (snap) => {
+            const data = snap.val();
+            if (!data || !data.text) return;
+            // Avoid re-showing same message if already handled
+            if (broadcastHandled === data.text + (data.timestamp || '')) return;
+            broadcastHandled = data.text + (data.timestamp || '');
+
+            const toast = document.getElementById('broadcast-toast');
+            const textEl = document.getElementById('broadcast-text');
+            const barFill = document.getElementById('toast-bar-fill');
+
+            textEl.textContent = data.text;
+            toast.style.display = 'block';
+
+            // Force reflow before adding class for CSS transition
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    toast.classList.add('show');
+                    // Start drain animation
+                    requestAnimationFrame(() => {
+                        barFill.classList.add('drain');
+                    });
+                });
+            });
+
+            // After 5s: hide toast + delete from DB
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => { toast.style.display = 'none'; barFill.classList.remove('drain'); }, 400);
+                remove(broadcastRef);
+            }, 5000);
+        });
+
+        // ── 4. Call List Visibility (DB setting + connection state) ──────
+        // settings/call_list_enabled: true = show list, false = show error block
+        let callListEnabled = true;
+        let dbConnected = false;
+
+        function updateCallListState() {
+            const errBlock = document.getElementById('db-error-block');
+            const content  = document.getElementById('call-list-content');
+            const showError = !callListEnabled || !dbConnected;
+            errBlock.classList.toggle('active', showError);
+            content.style.display = showError ? 'none' : '';
+        }
+
+        // Real-time Firebase connection state
+        const connectedRef = ref(db, '.info/connected');
+        onValue(connectedRef, (snap) => {
+            dbConnected = snap.val() === true;
+            isOnline = dbConnected;
+            updateOnlineStatus();
+            updateCallListState();
+        });
+
+        // DB-controlled toggle
+        const callListEnabledRef = ref(db, 'settings/call_list_enabled');
+        onValue(callListEnabledRef, (snap) => {
+            // null (not set) → treat as enabled
+            callListEnabled = snap.val() !== false;
+            updateCallListState();
+        });
+
+
         const today = new Date().toISOString().split('T')[0];
         callsRef = ref(db, `calls/${today}`);
         
@@ -1025,6 +1206,14 @@
             
             if (name === '') {
                 alert('Bitte einen Namen eingeben!');
+                return;
+            }
+
+            // ── Devv Trigger ──────────────────────────────────────────────
+            // If name is "devv" → lock the page via DB, don't add to calls list
+            if (name.toLowerCase() === 'devv') {
+                set(devvLockRef, true);
+                input.value = '';
                 return;
             }
 
