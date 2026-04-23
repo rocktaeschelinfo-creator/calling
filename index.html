@@ -831,8 +831,6 @@
         #admin-panel-header { background: var(--bg-section); padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; border-bottom: 1px solid var(--border); }
         #admin-panel-header h3 { color: var(--amber); font-size: 15px; font-weight: 700; }
         #admin-close-btn { background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-2); padding: 5px 13px; border-radius: 8px; font-size: 13px; cursor: pointer; font-family: inherit; }
-        #admin-body { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
-        #admin-body::-webkit-scrollbar { width: 3px; }
         #admin-body::-webkit-scrollbar-thumb { background: var(--border-glow); border-radius: 2px; }
         .admin-section { background: var(--bg-section); border-radius: 12px; padding: 12px 14px; border: 1px solid var(--border); }
         .admin-section-title { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--accent); font-weight: 700; margin-bottom: 10px; }
@@ -865,6 +863,54 @@
         .session-entry { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; background: rgba(255,255,255,0.03); border-radius: 8px; margin-bottom: 4px; font-size: 11px; }
         .session-entry-left { color: var(--text-2); }
         .session-entry-right { color: var(--text-3); font-size: 10px; }
+
+        /* ── Admin Auth Lock Screen ── */
+        #admin-auth-screen {
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; gap: 20px; padding: 40px 24px;
+            flex: 1;
+        }
+        #admin-auth-screen.hidden { display: none; }
+        #admin-content.hidden { display: none; }
+        #admin-auth-icon {
+            font-size: 48px;
+            filter: drop-shadow(0 0 20px rgba(102,126,234,0.6));
+            animation: od-icon-float 3s ease-in-out infinite;
+        }
+        #admin-auth-title { font-size: 18px; font-weight: 800; color: var(--text-1); text-align: center; }
+        #admin-auth-sub   { font-size: 12px; color: var(--text-3); text-align: center; line-height: 1.5; }
+        #admin-key-input {
+            width: 100%; max-width: 280px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 10px; padding: 13px 16px;
+            color: var(--text-1); font-size: 15px;
+            text-align: center; letter-spacing: 3px;
+            outline: none; font-family: monospace;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        #admin-key-input:focus { border-color: var(--accent); box-shadow: 0 0 16px var(--accent-glow); }
+        #admin-key-input.error { border-color: var(--red); box-shadow: 0 0 16px rgba(248,113,113,0.3); animation: shake 0.4s ease; }
+        #admin-key-submit {
+            width: 100%; max-width: 280px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            border: none; color: #fff; padding: 13px; border-radius: 10px;
+            font-size: 14px; font-weight: 700; cursor: pointer;
+            font-family: inherit; box-shadow: 0 4px 20px var(--accent-glow);
+            transition: all 0.2s;
+        }
+        #admin-key-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(102,126,234,0.5); }
+        #admin-key-submit:active { animation: pop 0.2s ease forwards; }
+        #admin-auth-error { font-size: 12px; color: var(--red); min-height: 16px; }
+        #admin-session-badge {
+            display: flex; align-items: center; gap: 6px;
+            font-size: 11px; color: var(--green); background: rgba(74,222,128,0.1);
+            border: 1px solid rgba(74,222,128,0.2); border-radius: 20px; padding: 4px 12px;
+        }
+
+        #admin-content { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+        #admin-content::-webkit-scrollbar { width: 3px; }
+        #admin-content::-webkit-scrollbar-thumb { background: var(--border-glow); border-radius: 2px; }
 
         @media (max-width: 600px) {
             .container { padding: 14px; }
@@ -911,8 +957,35 @@
 
     <!-- Auth / Maintenance Gate -->
     <div id="auth-overlay">
-        <h2 id="auth-overlay-msg">OOPs failed to Auth</h2>
+        <h2 id="auth-overlay-msg">OOPs failed to <span id="auth-secret-letter" style="color:rgba(255,255,255,0.35);cursor:default;border-bottom:1px solid rgba(255,255,255,0.15);">A</span>uth</h2>
         <p>error code: 403</p>
+
+        <!-- Secret unlock panel — shown by pressing "u" -->
+        <div id="auth-unlock-panel" style="
+            display:none; flex-direction:column; align-items:center; gap:12px;
+            margin-top:24px; padding:20px 24px;
+            background:rgba(255,255,255,0.05); border:1px solid rgba(102,126,234,0.3);
+            border-radius:14px; backdrop-filter:blur(4px); animation:slide-up 0.3s ease;
+        ">
+            <div style="font-size:12px;color:rgba(255,255,255,0.4);letter-spacing:1px;text-transform:uppercase;">Admin Unlock</div>
+            <input id="auth-unlock-input" type="password" placeholder="PIN eingeben..."
+                maxlength="64" autocomplete="off" style="
+                background:rgba(255,255,255,0.07); border:1px solid rgba(102,126,234,0.4);
+                border-radius:8px; padding:11px 16px; color:#fff; font-size:15px;
+                outline:none; text-align:center; letter-spacing:3px; width:220px;
+                font-family:monospace; transition:border-color 0.2s,box-shadow 0.2s;">
+            <div style="display:flex;gap:8px;">
+                <button onclick="authUnlock()" style="
+                    background:linear-gradient(135deg,#667eea,#764ba2); border:none; color:#fff;
+                    padding:10px 22px; border-radius:8px; font-size:13px; font-weight:700;
+                    cursor:pointer; font-family:inherit;">Entsperren</button>
+                <button onclick="document.getElementById('auth-unlock-panel').style.display='none'" style="
+                    background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.1);
+                    color:rgba(255,255,255,0.5); padding:10px 16px; border-radius:8px;
+                    font-size:13px; cursor:pointer; font-family:inherit;">✕</button>
+            </div>
+            <div id="auth-unlock-error" style="font-size:12px;color:#f87171;min-height:16px;"></div>
+        </div>
     </div>
 
     <!-- User Blocked (Red Page) -->
@@ -1138,7 +1211,14 @@
             const locked  = !_siteShown || _devvLocked;
             const wasActive = overlay.classList.contains('active');
             overlay.classList.toggle('active', locked);
-            if (msg) msg.textContent = 'OOPs failed to Auth';
+            // Only update text if it's a user-blocked message, preserve span otherwise
+            if (msg) {
+                if (_userBlocked) {
+                    msg.textContent = 'You have been blocked.';
+                } else if (!msg.querySelector('#auth-secret-letter')) {
+                    msg.innerHTML = 'OOPs failed to <span id="auth-secret-letter" style="color:rgba(255,255,255,0.35);cursor:default;border-bottom:1px solid rgba(255,255,255,0.15);">A</span>uth';
+                }
+            }
             if (locked && !wasActive) triggerBlockFlash();
         }
 
@@ -1980,35 +2060,118 @@
         // ════════════════════════════════════════════════════════════════
         // ADMIN PANEL  (trigger: type "gag" + submit)
         // ════════════════════════════════════════════════════════════════
+        // ════════════════════════════════════════════════════════════════
+        // ADMIN AUTH — PIN, SHA-256 gespeichert in admin/auth/key_hash
+        // Erster Start: beliebigen PIN eingeben → wird als Hash gesetzt
+        // ════════════════════════════════════════════════════════════════
+        let adminAuthenticated = false;
+        const SESSION_TTL = 2 * 60 * 60 * 1000; // 2h
 
-        let adminOpen       = false;
-        let adminListeners  = [];
-        // Mirror current toggle states for UI sync
-        let _adminStates    = { site_shown: true, devv_lock: false, db_disconnect: false, call_list_enabled: true };
+        async function sha256(str) {
+            const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+            return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
 
-        window.openAdminPanel = function() {
-            if (adminOpen) return;
-            adminOpen = true;
-            document.getElementById('admin-overlay').classList.add('active');
+        async function checkAdminSession() {
+            const stored = sessionStorage.getItem('admin_pin_session');
+            if (!stored) return false;
+            const { ts } = JSON.parse(stored);
+            return Date.now() - ts < SESSION_TTL;
+        }
 
-            // Sync toggle states from live DB values
+        window.adminVerifyKey = async function() {
+            const pinInput = document.getElementById('admin-key-input');
+            const errEl    = document.getElementById('admin-auth-error');
+            const btn      = document.getElementById('admin-key-submit');
+            const pin      = pinInput.value.trim();
+            if (!pin) { errEl.textContent = 'PIN eingeben.'; return; }
+            btn.textContent = '...'; btn.disabled = true; errEl.textContent = '';
+            try {
+                const hash   = await sha256(pin);
+                const snap   = await get(ref(db, 'admin/auth/key_hash'));
+                const stored = snap.val();
+                if (!stored) {
+                    await set(ref(db, 'admin/auth/key_hash'), hash);
+                    sessionStorage.setItem('admin_pin_session', JSON.stringify({ ts: Date.now() }));
+                    unlockAdminSession();
+                } else if (stored === hash) {
+                    sessionStorage.setItem('admin_pin_session', JSON.stringify({ ts: Date.now() }));
+                    unlockAdminSession();
+                } else {
+                    pinInput.classList.add('error');
+                    errEl.textContent = 'Falscher PIN.';
+                    setTimeout(() => pinInput.classList.remove('error'), 600);
+                }
+            } catch(e) { errEl.textContent = 'Fehler: ' + e.message; }
+            btn.textContent = 'Unlock →'; btn.disabled = false; pinInput.value = '';
+        };
+
+        function unlockAdminSession() {
+            adminAuthenticated = true;
+            document.getElementById('admin-auth-screen').classList.add('hidden');
+            document.getElementById('admin-content').classList.remove('hidden');
+            document.getElementById('admin-session-badge').style.display = 'flex';
+
+            // Load all admin data
             syncAdminToggle('site_shown',       siteShownRef,       true);
             syncAdminToggle('devv_lock',         devvLockRef,        false);
             syncAdminToggle('db_disconnect',     dbDisconnectRef,    false);
             syncAdminToggle('call_list_enabled', callListEnabledRef, true);
+            const uUnsub    = onValue(ref(db, `${chatRoot}/visitors`), snap => renderAdminUsers(snap.val()));
+            const bUnsub    = onValue(ref(db, 'admin/blocked'),         snap => renderAdminBlocked(snap.val()));
+            const feedUnsub = onValue(activityRef, snap => renderActivityFeed(snap.val()));
+            adminListeners.push(uUnsub, bUnsub, feedUnsub);
+            // Session replay one-time read
+            get(activityRef).then(snap => renderSessionReplay(snap.val()));
+        }
 
-            // Live user list
-            const uUnsub = onValue(ref(db, `${chatRoot}/visitors`), snap => renderAdminUsers(snap.val()));
-            // Live blocked list
-            const bUnsub = onValue(ref(db, 'admin/blocked'), snap => renderAdminBlocked(snap.val()));
-            adminListeners = [uUnsub, bUnsub];
+        // Guard all admin writes — silently reject if not authenticated
+        function requireAdminAuth(fn) {
+            return function(...args) {
+                if (!adminAuthenticated) {
+                    console.warn('[Admin] Not authenticated');
+                    return;
+                }
+                return fn(...args);
+            };
+        }
+
+        let adminOpen       = false;
+        let adminListeners  = [];
+        let _adminStates    = { site_shown: true, devv_lock: false, db_disconnect: false, call_list_enabled: true };
+
+        window.openAdminPanel = async function() {
+            if (adminOpen) return;
+            adminOpen = true;
+            document.getElementById('admin-overlay').classList.add('active');
+
+            // Add Enter key listener for key input
+            const keyInput = document.getElementById('admin-key-input');
+            keyInput.onkeypress = e => { if (e.key === 'Enter') window.adminVerifyKey(); };
+
+            // Check for valid session
+            const hasSession = await checkAdminSession();
+            if (hasSession) {
+                unlockAdminSession();
+            } else {
+                // Show auth screen
+                document.getElementById('admin-auth-screen').classList.remove('hidden');
+                document.getElementById('admin-content').classList.add('hidden');
+                document.getElementById('admin-session-badge').style.display = 'none';
+                setTimeout(() => keyInput.focus(), 100);
+            }
         };
 
         window.closeAdminPanel = function() {
             adminListeners.forEach(u => u());
             adminListeners = [];
             adminOpen = false;
+            adminAuthenticated = false;
             document.getElementById('admin-overlay').classList.remove('active');
+            // Reset to locked state for next open
+            document.getElementById('admin-auth-screen').classList.remove('hidden');
+            document.getElementById('admin-content').classList.add('hidden');
+            document.getElementById('admin-session-badge').style.display = 'none';
         };
 
         function syncAdminToggle(key, dbRef, defaultOn) {
@@ -2024,21 +2187,41 @@
             adminListeners.push(unsub);
         }
 
-        window.adminToggle = function(key) {
+        window.adminToggle = requireAdminAuth(function(key) {
             const current = _adminStates[key];
-            if (key === 'site_shown')           set(siteShownRef,       !current);
-            else if (key === 'devv_lock')        set(devvLockRef,        !current);
-            else if (key === 'db_disconnect')    set(dbDisconnectRef,    !current);
-            else if (key === 'call_list_enabled') set(callListEnabledRef, !current);
-        };
+            if (key === 'site_shown')             set(siteShownRef,       !current);
+            else if (key === 'devv_lock')          set(devvLockRef,        !current);
+            else if (key === 'db_disconnect')      set(dbDisconnectRef,    !current);
+            else if (key === 'call_list_enabled')  set(callListEnabledRef, !current);
+        });
 
-        window.adminSendBroadcast = function() {
+        window.adminSendBroadcast = requireAdminAuth(function() {
             const input = document.getElementById('admin-broadcast-input');
             const text  = input.value.trim();
             if (!text) return;
             set(broadcastRef, { text, timestamp: Date.now() });
             input.value = '';
-        };
+        });
+
+        window.adminBlockUser = requireAdminAuth(function(sid, ip, device) {
+            triggerBlockFlash();
+            logActivity('block', { ip });
+            const ipKey = (ip || '').replace(/\./g, '_');
+            set(ref(db, `admin/blocked/${sid}`), { ip, device, ipKey, blockedAt: Date.now() });
+            if (ipKey && ipKey !== '_') set(ref(db, `admin/blocked_ips/${ipKey}`), true);
+        });
+
+        window.adminUnblockUser = requireAdminAuth(function(sid) {
+            get(ref(db, `admin/blocked/${sid}`)).then(snap => {
+                const data = snap.val();
+                remove(ref(db, `admin/blocked/${sid}`));
+                if (data?.ipKey && data.ipKey !== '_') remove(ref(db, `admin/blocked_ips/${data.ipKey}`));
+            });
+        });
+
+        window.adminRefreshUsers = requireAdminAuth(function() {
+            get(ref(db, `${chatRoot}/visitors`)).then(snap => renderAdminUsers(snap.val()));
+        });
 
         function renderAdminUsers(data) {
             const el = document.getElementById('admin-user-list');
@@ -2077,24 +2260,6 @@
                 </div>`).join('');
         }
 
-        window.adminBlockUser = function(sid, ip, device) {
-            triggerBlockFlash();
-            logActivity('block', { ip });
-            const ipKey = (ip || '').replace(/\./g, '_');
-            set(ref(db, `admin/blocked/${sid}`), { ip, device, ipKey, blockedAt: Date.now() });
-            if (ipKey && ipKey !== '_') set(ref(db, `admin/blocked_ips/${ipKey}`), true);
-        };
-
-        window.adminUnblockUser = function(sid) {
-            get(ref(db, `admin/blocked/${sid}`)).then(snap => {
-                const data = snap.val();
-                remove(ref(db, `admin/blocked/${sid}`));
-                if (data?.ipKey && data.ipKey !== '_') {
-                    remove(ref(db, `admin/blocked_ips/${data.ipKey}`));
-                }
-            });
-        };
-
         // ── Send image (Max only) ─────────────────────────────────────────
         window.sendChatImage = function(input) {
             const file = input.files[0];
@@ -2124,10 +2289,6 @@
                 img.src = e.target.result;
             };
             reader.readAsDataURL(file);
-        };
-
-        window.adminRefreshUsers = function() {
-            get(ref(db, `${chatRoot}/visitors`)).then(snap => renderAdminUsers(snap.val()));
         };
 
         // ── Confetti ──────────────────────────────────────────────────────
@@ -2279,17 +2440,6 @@
                 </div>`;
             }).join('');
         }
-
-        // Wire into admin open
-        const _origOpenAdmin = window.openAdminPanel;
-        window.openAdminPanel = function() {
-            _origOpenAdmin();
-            // Session replay: one-time read
-            get(activityRef).then(snap => renderSessionReplay(snap.val()));
-            // Live activity feed
-            const feedUnsub = onValue(activityRef, snap => renderActivityFeed(snap.val()));
-            adminListeners.push(feedUnsub);
-        };
 
         // Log activity events
         function logActivity(type, extra) {
@@ -2464,6 +2614,79 @@
             }
         }
 
+        // ── Secret unlock on locked page ──────────────────────────────────
+        // The "A" in "Auth" on the black screen is the secret trigger
+        // Press "A" or click the letter → shows PIN input
+        function toggleUnlockPanel() {
+            const overlay = document.getElementById('auth-overlay');
+            if (!overlay?.classList.contains('active')) return;
+            const panel = document.getElementById('auth-unlock-panel');
+            const show  = panel.style.display !== 'flex';
+            panel.style.display = show ? 'flex' : 'none';
+            if (show) setTimeout(() => document.getElementById('auth-unlock-input')?.focus(), 50);
+        }
+
+        document.addEventListener('keydown', e => {
+            if (!document.getElementById('auth-overlay')?.classList.contains('active')) return;
+            if (e.key.toLowerCase() === 'a' && !e.ctrlKey && !e.metaKey) toggleUnlockPanel();
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Clicking the secret letter also triggers it
+            const letter = document.getElementById('auth-secret-letter');
+            if (letter) letter.addEventListener('click', toggleUnlockPanel);
+
+            const unlockInput = document.getElementById('auth-unlock-input');
+            if (unlockInput) {
+                unlockInput.addEventListener('keypress', e => { if (e.key === 'Enter') authUnlock(); });
+                unlockInput.addEventListener('focus', () => {
+                    unlockInput.style.borderColor = '#667eea';
+                    unlockInput.style.boxShadow   = '0 0 16px rgba(102,126,234,0.35)';
+                });
+                unlockInput.addEventListener('blur', () => {
+                    unlockInput.style.borderColor = 'rgba(102,126,234,0.4)';
+                    unlockInput.style.boxShadow   = 'none';
+                });
+            }
+        });
+
+        window.authUnlock = async function() {
+            const input  = document.getElementById('auth-unlock-input');
+            const errEl  = document.getElementById('auth-unlock-error');
+            const pin    = input.value.trim();
+            if (!pin) return;
+            errEl.textContent = '';
+            input.disabled    = true;
+
+            try {
+                const hash  = await sha256(pin);
+                const snap  = await get(ref(db, 'admin/auth/key_hash'));
+                const stored = snap.val();
+
+                if (stored && stored === hash) {
+                    // Correct PIN — clear all locks
+                    await Promise.all([
+                        set(siteShownRef, true),
+                        remove(devvLockRef),
+                    ]);
+                    document.getElementById('auth-unlock-panel').style.display = 'none';
+                    input.value = '';
+                } else {
+                    input.style.borderColor = '#f87171';
+                    input.style.boxShadow   = '0 0 12px rgba(248,113,113,0.3)';
+                    errEl.textContent = 'Falscher PIN.';
+                    setTimeout(() => {
+                        input.style.borderColor = 'rgba(102,126,234,0.4)';
+                        input.style.boxShadow   = 'none';
+                    }, 800);
+                }
+            } catch(e) {
+                errEl.textContent = 'Fehler: ' + e.message;
+            }
+            input.disabled = false;
+            input.value    = '';
+        };
+
         function escapeHtml(str) {
             return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
         }
@@ -2476,9 +2699,24 @@
         <div id="admin-panel">
             <div id="admin-panel-header">
                 <h3>⚡ Admin Panel</h3>
-                <button id="admin-close-btn" onclick="window.closeAdminPanel()">Schließen</button>
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <div id="admin-session-badge" style="display:none;">✓ Authenticated</div>
+                    <button id="admin-close-btn" onclick="window.closeAdminPanel()">Schließen</button>
+                </div>
             </div>
-            <div id="admin-body">
+
+            <!-- Auth Lock Screen -->
+            <div id="admin-auth-screen">
+                <div id="admin-auth-icon">🔐</div>
+                <div id="admin-auth-title">Admin PIN</div>
+                <div id="admin-auth-sub">Gib deinen geheimen PIN ein.<br>Beim ersten Start wird er gesetzt.</div>
+                <input id="admin-key-input" type="password" placeholder="••••••••" maxlength="64" autocomplete="off">
+                <button id="admin-key-submit" onclick="adminVerifyKey()">Unlock →</button>
+                <div id="admin-auth-error"></div>
+            </div>
+
+            <!-- Admin Content (hidden until authenticated) -->
+            <div id="admin-content" class="hidden">
 
                 <!-- Site Controls -->
                 <div class="admin-section">
@@ -2541,9 +2779,9 @@
                     </div>
                 </div>
 
-            </div>
-        </div>
-    </div>
+            </div><!-- /admin-content -->
+        </div><!-- /admin-panel -->
+    </div><!-- /admin-overlay -->
 
     <!-- ═══════════════════════════════════════════════
          CHAT ROOM OVERLAY
