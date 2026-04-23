@@ -188,21 +188,39 @@
         }
 
         .target-bar {
-            height: 6px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 3px;
-            margin-top: 6px;
-            overflow: hidden;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 5px;
+            margin-top: 8px;
+            overflow: visible;
+            position: relative;
         }
 
         .target-fill {
             height: 100%;
-            background: #4caf50;
-            transition: width 0.3s ease;
+            border-radius: 5px;
+            background: #ef4444;
+            transition: width 0.6s cubic-bezier(.25,.8,.25,1), background 0.8s ease;
+            position: relative;
+            box-shadow: 0 0 8px rgba(239,68,68,0.6);
+        }
+        .target-fill.mid {
+            background: #f59e0b;
+            box-shadow: 0 0 8px rgba(245,158,11,0.6);
+        }
+        .target-fill.close {
+            background: #22c55e;
+            box-shadow: 0 0 10px rgba(34,197,94,0.7);
+        }
+        .target-fill.done {
+            background: linear-gradient(90deg, #22c55e, #4ade80);
+            box-shadow: 0 0 14px rgba(74,222,128,0.9);
+            animation: bar-shine 1.4s ease infinite;
         }
 
-        .target-fill.warning {
-            background: #ffc107;
+        @keyframes bar-shine {
+            0%,100% { filter: brightness(1); }
+            50%      { filter: brightness(1.3); }
         }
 
         .counter-row {
@@ -391,12 +409,13 @@
         }
 
         .progress-bar-container {
-            background: rgba(255, 255, 255, 0.7);
+            background: rgba(255, 255, 255, 0.25);
             height: 36px;
             border-radius: 12px;
             overflow: hidden;
             margin-bottom: 12px;
-            border: 2px solid rgba(255, 255, 255, 0.8);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            position: relative;
         }
 
         body.dark-mode .progress-bar-container {
@@ -405,8 +424,8 @@
 
         .progress-bar-fill {
             height: 100%;
-            background: linear-gradient(90deg, var(--accent) 0%, var(--accent-dark) 100%);
-            transition: width 0.3s ease;
+            background: #ef4444;
+            transition: width 0.6s cubic-bezier(.25,.8,.25,1), background 0.8s ease;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -414,6 +433,18 @@
             font-weight: 700;
             font-size: 16px;
             min-width: 40px;
+            position: relative;
+        }
+        .progress-bar-fill.mid  { background: linear-gradient(90deg,#f59e0b,#fbbf24); }
+        .progress-bar-fill.close { background: linear-gradient(90deg,#22c55e,#4ade80); }
+        .progress-bar-fill.done {
+            background: linear-gradient(90deg,#16a34a,#4ade80,#16a34a);
+            background-size: 200% 100%;
+            animation: bar-sweep 1.5s linear infinite;
+        }
+        @keyframes bar-sweep {
+            0%   { background-position: 0% 0; }
+            100% { background-position: 200% 0; }
         }
 
         .progress-text {
@@ -859,7 +890,41 @@
         .block-title { color: #fff; font-size: 15px; font-weight: 700; font-family: 'Segoe UI', sans-serif; }
         .block-sub   { color: rgba(255,255,255,0.4); font-size: 12px; font-family: 'Segoe UI', sans-serif; }
 
-        /* ── Auth Overlay ── */
+        /* ── Call item delete animation ── */
+        @keyframes item-delete {
+            0%   { transform: translateX(0) scale(1); opacity: 1; max-height: 80px; margin-bottom: 8px; }
+            20%  { transform: translateX(-6px); }
+            40%  { transform: translateX(5px); }
+            60%  { transform: translateX(-3px); opacity: 1; }
+            100% { transform: translateX(110%) scale(0.85); opacity: 0; max-height: 0; margin-bottom: 0; padding-top: 0; padding-bottom: 0; }
+        }
+        .call-item.deleting {
+            overflow: hidden;
+            animation: item-delete 0.42s cubic-bezier(.55,.06,.68,.19) forwards;
+        }
+
+        /* ── Submit input success flash ── */
+        @keyframes input-success {
+            0%   { box-shadow: 0 0 0 0 rgba(74,222,128,0);    border-color: #4ade80; }
+            35%  { box-shadow: 0 0 0 8px rgba(74,222,128,0.3); }
+            100% { box-shadow: 0 0 0 0 rgba(74,222,128,0);    border-color: #fcb69f; }
+        }
+        .call-input.submit-flash { animation: input-success 0.65s ease forwards; }
+
+        /* ── Block flash (red screen when user gets locked/kicked) ── */
+        .block-flash {
+            position: fixed; inset: 0;
+            background: rgba(220,38,38,0.5);
+            pointer-events: none;
+            z-index: 99997;
+            animation: block-flash-anim 0.55s ease forwards;
+        }
+        @keyframes block-flash-anim {
+            0%   { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        /* ── Auth Overlay — dramatic entrance + glitch ── */
         #auth-overlay {
             display: none;
             position: fixed;
@@ -871,24 +936,70 @@
             flex-direction: column;
             gap: 16px;
         }
-
         #auth-overlay.active {
             display: flex;
+            animation: overlay-enter 0.55s cubic-bezier(.77,0,.175,1) forwards;
         }
+        @keyframes overlay-enter {
+            0%   { opacity: 0; clip-path: inset(50% 0 50% 0); }
+            50%  { opacity: 1; clip-path: inset(0% 0 0% 0); }
+            65%  { filter: brightness(2.5) saturate(0); transform: skewX(-1.5deg); }
+            70%  { filter: none; transform: none; }
+            80%  { filter: brightness(1.8); transform: skewX(0.8deg); }
+            100% { filter: none; transform: none; opacity: 1; }
+        }
+        /* Scanlines */
+        #auth-overlay::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: repeating-linear-gradient(
+                0deg, transparent, transparent 2px,
+                rgba(255,255,255,0.018) 2px, rgba(255,255,255,0.018) 4px
+            );
+            pointer-events: none; z-index: 1;
+        }
+        /* Moving scan line */
+        #auth-overlay::after {
+            content: '';
+            position: absolute; left: 0; right: 0; height: 3px;
+            background: rgba(0,255,200,0.07);
+            animation: scanline-move 2.5s linear infinite;
+            pointer-events: none; z-index: 1;
+        }
+        @keyframes scanline-move { 0% { top: -3px; } 100% { top: 100%; } }
+
+        #auth-overlay > * { position: relative; z-index: 2; }
 
         #auth-overlay h2 {
             color: #fff;
             font-size: 32px;
             font-weight: 700;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
             text-align: center;
             font-family: 'Segoe UI', sans-serif;
+            animation: glitch-text 4s ease infinite;
         }
-
+        @keyframes glitch-text {
+            0%,88%,100% { text-shadow: none; transform: none; }
+            90% { text-shadow: -3px 0 #ff003c, 3px 0 #00f3ff; transform: skewX(-2deg); }
+            92% { text-shadow: 3px 0 #ff003c, -3px 0 #00f3ff; transform: skewX(1.5deg); }
+            94% { text-shadow: none; transform: none; }
+            96% { text-shadow: -2px 0 #ff003c; transform: skewX(0.8deg); }
+            98% { text-shadow: none; transform: none; }
+        }
         #auth-overlay p {
-            color: rgba(255,255,255,0.45);
-            font-size: 14px;
+            color: rgba(255,255,255,0.4);
+            font-size: 13px;
             font-family: 'Segoe UI', sans-serif;
+            letter-spacing: 1px;
+            animation: flicker 5s ease infinite;
+        }
+        @keyframes flicker {
+            0%,95%,100% { opacity: 0.4; }
+            96% { opacity: 0.1; }
+            97% { opacity: 0.5; }
+            98% { opacity: 0.15; }
+            99% { opacity: 0.4; }
         }
 
         /* ════════════════════════════════════════════════════════════════
@@ -1122,6 +1233,122 @@
         .admin-unblock-btn:hover { background:rgba(74,222,128,0.3); }
         #admin-no-users { font-size:12px; color:rgba(255,255,255,0.3); text-align:center; padding:8px 0; }
 
+        /* ── Confetti ── */
+        .confetti-piece {
+            position: fixed;
+            width: 10px; height: 10px;
+            top: -10px;
+            border-radius: 2px;
+            pointer-events: none;
+            z-index: 99999;
+            animation: confetti-fall linear forwards;
+        }
+        @keyframes confetti-fall {
+            0%   { transform: translateY(0) rotate(0deg) scale(1);   opacity: 1; }
+            80%  { opacity: 1; }
+            100% { transform: translateY(110vh) rotate(720deg) scale(0.6); opacity: 0; }
+        }
+
+        /* ════════════════════════════════════════════════════════════════
+           EXTRA EFFECTS
+        ════════════════════════════════════════════════════════════════ */
+
+        /* Floating +1 / -1 label */
+        .float-label {
+            position: absolute;
+            font-size: 20px;
+            font-weight: 900;
+            pointer-events: none;
+            z-index: 1000;
+            animation: float-up 0.9s cubic-bezier(.25,.8,.25,1) forwards;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.25);
+        }
+        .float-label.up   { color: #4ade80; }
+        .float-label.down { color: #f87171; }
+        @keyframes float-up {
+            0%   { transform: translateY(0)    scale(1);    opacity: 1; }
+            60%  { transform: translateY(-42px) scale(1.2); opacity: 1; }
+            100% { transform: translateY(-70px) scale(0.8); opacity: 0; }
+        }
+
+        /* Number pop when counter changes */
+        @keyframes num-pop {
+            0%   { transform: scale(1); }
+            35%  { transform: scale(1.45); }
+            65%  { transform: scale(0.9); }
+            100% { transform: scale(1); }
+        }
+        .counter-value.popping { animation: num-pop 0.35s cubic-bezier(.175,.885,.32,1.275) forwards; }
+
+        /* Counter row flash on increment */
+        @keyframes row-flash-up {
+            0%   { box-shadow: 0 0 0 0 rgba(102,126,234,0); }
+            30%  { box-shadow: 0 0 0 6px rgba(102,126,234,0.35); }
+            100% { box-shadow: 0 0 0 0 rgba(102,126,234,0); }
+        }
+        @keyframes row-flash-down {
+            0%   { box-shadow: 0 0 0 0 rgba(248,113,113,0); }
+            30%  { box-shadow: 0 0 0 6px rgba(248,113,113,0.35); }
+            100% { box-shadow: 0 0 0 0 rgba(248,113,113,0); }
+        }
+        .counter-row.flash-up   { animation: row-flash-up   0.5s ease forwards; }
+        .counter-row.flash-down { animation: row-flash-down 0.5s ease forwards; }
+
+        /* Call item slide-in */
+        @keyframes item-in {
+            from { transform: translateX(30px); opacity: 0; }
+            to   { transform: translateX(0);    opacity: 1; }
+        }
+        .call-item { animation: item-in 0.3s cubic-bezier(.25,.8,.25,1) both; }
+        .call-item:nth-child(1) { animation-delay: 0ms; }
+        .call-item:nth-child(2) { animation-delay: 40ms; }
+        .call-item:nth-child(3) { animation-delay: 80ms; }
+        .call-item:nth-child(4) { animation-delay: 120ms; }
+        .call-item:nth-child(5) { animation-delay: 160ms; }
+
+        /* Stat boxes pulse when values update */
+        @keyframes stat-update {
+            0%   { transform: scale(1); }
+            40%  { transform: scale(1.06); filter: brightness(1.2); }
+            100% { transform: scale(1); filter: brightness(1); }
+        }
+        .stat-box.updated { animation: stat-update 0.4s ease forwards; }
+
+        /* Particle burst from + button */
+        .particle {
+            position: fixed;
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            animation: particle-burst 0.6s ease-out forwards;
+        }
+        @keyframes particle-burst {
+            0%   { transform: translate(0,0) scale(1);   opacity: 1; }
+            100% { transform: var(--tx,0) var(--ty,0) scale(0); opacity: 0; }
+        }
+
+        /* Container ambient glow based on progress */
+        .container { transition: box-shadow 1s ease; }
+        .container.progress-mid   { box-shadow: 0 25px 50px rgba(245,158,11,0.22), 0 0 0 2px rgba(245,158,11,0.08); }
+        .container.progress-close { box-shadow: 0 25px 50px rgba(34,197,94,0.22),  0 0 0 2px rgba(34,197,94,0.1); }
+        .container.progress-done  { box-shadow: 0 25px 50px rgba(74,222,128,0.35), 0 0 0 3px rgba(74,222,128,0.2); animation: done-pulse 2s ease infinite; }
+        @keyframes done-pulse {
+            0%,100% { box-shadow: 0 25px 50px rgba(74,222,128,0.35), 0 0 0 3px rgba(74,222,128,0.2); }
+            50%      { box-shadow: 0 30px 60px rgba(74,222,128,0.55), 0 0 0 5px rgba(74,222,128,0.3); }
+        }
+
+        /* Milestone flash overlay */
+        .milestone-flash {
+            position: fixed; inset: 0;
+            pointer-events: none; z-index: 99998;
+            animation: mflash 0.5s ease forwards;
+        }
+        @keyframes mflash {
+            0%   { opacity: 0.28; }
+            100% { opacity: 0; }
+        }
+
         @media (max-width: 600px) {
             .container {
                 padding: 16px;
@@ -1350,12 +1577,22 @@
             return !_siteShown || _devvLocked || _userBlocked;
         }
 
+        function triggerBlockFlash() {
+            const el = document.createElement('div');
+            el.className = 'block-flash';
+            document.body.appendChild(el);
+            el.addEventListener('animationend', () => el.remove());
+        }
+
         function updateAuthOverlay() {
             const overlay = document.getElementById('auth-overlay');
             const msg     = document.getElementById('auth-overlay-msg');
             const locked  = !_siteShown || _devvLocked || _userBlocked;
+            const wasActive = overlay.classList.contains('active');
             overlay.classList.toggle('active', locked);
             if (msg) msg.textContent = _userBlocked ? 'You have been blocked.' : 'OOPs failed to Auth';
+            // Red flash when newly locked
+            if (locked && !wasActive) triggerBlockFlash();
         }
 
         function updateCallListState() {
@@ -1381,13 +1618,17 @@
         }
 
         function updateProgressBar() {
-            const pct  = goalValue > 0 ? Math.min((counters.a / goalValue) * 100, 100) : 0;
-            const bar  = document.getElementById('progress-bar');
+            const pct = goalValue > 0 ? Math.min((counters.a / goalValue) * 100, 100) : 0;
+            const bar = document.getElementById('progress-bar');
             if (bar) {
-                bar.style.width   = pct + '%';
-                bar.textContent   = Math.round(pct) + '%';
+                bar.style.width = pct + '%';
+                bar.textContent = Math.round(pct) + '%';
+                bar.className = 'progress-bar-fill';
+                if (pct >= 100)     bar.classList.add('done');
+                else if (pct >= 60) bar.classList.add('close');
+                else if (pct >= 30) bar.classList.add('mid');
             }
-            const elCur = document.getElementById('progress-current');
+            const elCur  = document.getElementById('progress-current');
             const elGoal = document.getElementById('progress-goal');
             if (elCur)  elCur.textContent  = counters.a;
             if (elGoal) elGoal.textContent = goalValue;
@@ -1422,6 +1663,8 @@
                 </div>`).join('');
         }
 
+        let _goalReachedGroups = new Set(); // track to avoid repeat confetti
+
         function updateStats(groupCalls) {
             let totalA = 0, totalE = 0, totalT = 0;
             Object.values(groupCalls).forEach(c => {
@@ -1434,12 +1677,33 @@
             document.getElementById('daily-e').textContent     = totalE;
             document.getElementById('daily-t').textContent     = totalT;
 
+            // Pulse stat boxes on update
+            document.querySelectorAll('.stat-box, .daily-total').forEach(box => {
+                box.classList.remove('updated');
+                void box.offsetWidth;
+                box.classList.add('updated');
+                box.addEventListener('animationend', () => box.classList.remove('updated'), { once: true });
+            });
+
             const targetMin = currentGroup === 'LG' ? TARGET_LG : TARGET_BW;
-            const pct = Math.min((totalA / targetMin) * 100, 100);
+            const pct  = Math.min((totalA / targetMin) * 100, 100);
             const fill = document.getElementById('target-fill');
             fill.style.width = pct + '%';
-            fill.classList.toggle('warning', pct < 100 && pct > 0);
+            // Color stages
+            fill.className = 'target-fill';
+            if (pct >= 100)     fill.classList.add('done');
+            else if (pct >= 60) fill.classList.add('close');
+            else if (pct >= 30) fill.classList.add('mid');
             document.getElementById('target-current').textContent = totalA;
+
+            // Confetti when goal reached (once per group per session)
+            const goalKey = currentGroup;
+            if (pct >= 100 && !_goalReachedGroups.has(goalKey)) {
+                _goalReachedGroups.add(goalKey);
+                launchConfetti();
+            } else if (pct < 100) {
+                _goalReachedGroups.delete(goalKey); // reset if drops below
+            }
 
             const perPerson = {};
             Object.values(groupCalls).forEach(c => {
@@ -1603,13 +1867,29 @@
                 offlineData.push(callData);
                 localStorage.setItem('offlineData', JSON.stringify(offlineData));
             }
-            input.value = '';
-            input.focus();
+            // Success flash on input
+            const callInput = document.getElementById('call-name-input');
+            callInput.value = '';
+            callInput.classList.remove('submit-flash');
+            void callInput.offsetWidth;
+            callInput.classList.add('submit-flash');
+            callInput.addEventListener('animationend', () => callInput.classList.remove('submit-flash'), { once: true });
+            callInput.focus();
         };
 
         window.deleteCall = function(id) {
             if (isLocked()) return;
-            remove(ref(db, `calls/${today}/${id}`));
+            // Animate item out first, then remove from DB
+            const btn = event?.target?.closest('.btn-delete');
+            const item = btn?.closest('.call-item');
+            if (item) {
+                item.classList.add('deleting');
+                item.addEventListener('animationend', () => {
+                    remove(ref(db, `calls/${today}/${id}`));
+                }, { once: true });
+            } else {
+                remove(ref(db, `calls/${today}/${id}`));
+            }
         };
 
         window.incrementCounter = function(key) {
@@ -1617,6 +1897,7 @@
             counters[key]++;
             updateDisplay(key);
             updateProgressBar();
+            triggerCounterEffects(key, true);
         };
 
         window.decrementCounter = function(key) {
@@ -1624,7 +1905,109 @@
             if (counters[key] > 0) counters[key]--;
             updateDisplay(key);
             updateProgressBar();
+            triggerCounterEffects(key, false);
         };
+
+        function triggerCounterEffects(key, isUp) {
+            // 1. Row flash
+            const row = document.querySelector(`#counter-${key}`)?.closest('.counter-row');
+            if (row) {
+                row.classList.remove('flash-up', 'flash-down');
+                void row.offsetWidth; // reflow
+                row.classList.add(isUp ? 'flash-up' : 'flash-down');
+                row.addEventListener('animationend', () => row.classList.remove('flash-up','flash-down'), { once: true });
+            }
+
+            // 2. Number pop
+            const valEl = document.getElementById(`counter-${key}`);
+            if (valEl) {
+                valEl.classList.remove('popping');
+                void valEl.offsetWidth;
+                valEl.classList.add('popping');
+                valEl.addEventListener('animationend', () => valEl.classList.remove('popping'), { once: true });
+            }
+
+            // 3. Floating +1 / -1 label
+            if (valEl) {
+                const rect   = valEl.getBoundingClientRect();
+                const label  = document.createElement('div');
+                label.className = `float-label ${isUp ? 'up' : 'down'}`;
+                label.textContent = isUp ? '+1' : '−1';
+                label.style.left = (rect.left + rect.width / 2 - 14) + 'px';
+                label.style.top  = (rect.top + window.scrollY - 10) + 'px';
+                document.body.appendChild(label);
+                label.addEventListener('animationend', () => label.remove());
+            }
+
+            // 4. Particle burst from button
+            if (isUp) {
+                const btn = document.querySelector(`#counter-${key}`)?.closest('.counter-row')?.querySelector('.btn-up');
+                if (btn) spawnParticles(btn, ['#667eea','#4ade80','#fbbf24','#818cf8']);
+            }
+
+            // 5. Update container glow
+            updateContainerGlow();
+        }
+
+        function spawnParticles(btn, colors) {
+            const rect = btn.getBoundingClientRect();
+            const cx   = rect.left + rect.width  / 2;
+            const cy   = rect.top  + rect.height / 2;
+            for (let i = 0; i < 8; i++) {
+                const p    = document.createElement('div');
+                p.className = 'particle';
+                const angle = (i / 8) * 360 + Math.random() * 20;
+                const dist  = 28 + Math.random() * 30;
+                const rad   = angle * Math.PI / 180;
+                p.style.cssText = `
+                    left:${cx - 3.5}px; top:${cy - 3.5}px;
+                    background:${colors[Math.floor(Math.random()*colors.length)]};
+                    --tx:translate(${Math.cos(rad)*dist}px,${Math.sin(rad)*dist}px);
+                    animation-duration:${0.45 + Math.random()*0.25}s;
+                `;
+                document.body.appendChild(p);
+                p.addEventListener('animationend', () => p.remove());
+            }
+        }
+
+        let _lastProgressClass = '';
+        let _lastMilestonePct  = 0;
+
+        function updateContainerGlow() {
+            const targetMin = currentGroup === 'LG' ? TARGET_LG : TARGET_BW;
+            const pct = Math.min((counters.a / (goalValue || 1)) * 100, 100);
+            const container = document.querySelector('.container');
+            if (!container) return;
+
+            let cls = '';
+            if (pct >= 100) cls = 'progress-done';
+            else if (pct >= 60) cls = 'progress-close';
+            else if (pct >= 30) cls = 'progress-mid';
+
+            if (cls !== _lastProgressClass) {
+                container.classList.remove('progress-mid','progress-close','progress-done');
+                if (cls) container.classList.add(cls);
+                _lastProgressClass = cls;
+            }
+
+            // Milestone flash at 30 / 60 / 100
+            const milestones = [30, 60, 100];
+            milestones.forEach(m => {
+                if (pct >= m && _lastMilestonePct < m) {
+                    triggerMilestoneFlash(m);
+                }
+            });
+            _lastMilestonePct = pct;
+        }
+
+        function triggerMilestoneFlash(pct) {
+            const colors = { 30: 'rgba(245,158,11,0.3)', 60: 'rgba(34,197,94,0.3)', 100: 'rgba(74,222,128,0.5)' };
+            const el = document.createElement('div');
+            el.className = 'milestone-flash';
+            el.style.background = colors[pct] || 'rgba(255,255,255,0.2)';
+            document.body.appendChild(el);
+            el.addEventListener('animationend', () => el.remove());
+        }
 
         window.updateGoal = function() {
             if (isLocked()) return;
@@ -1909,6 +2292,7 @@
         };
 
         window.kickUser = function(sid) {
+            triggerBlockFlash();
             set(ref(db, `${chatRoot}/kicked/${sid}`), true);
             remove(ref(db, `${chatRoot}/presence/${sid}`));
         };
@@ -2038,6 +2422,7 @@
         }
 
         window.adminBlockUser = function(sid, ip, device) {
+            triggerBlockFlash();
             set(ref(db, `admin/blocked/${sid}`), { ip, device, blockedAt: Date.now() });
         };
 
@@ -2075,6 +2460,30 @@
         window.adminRefreshUsers = function() {
             get(ref(db, `${chatRoot}/visitors`)).then(snap => renderAdminUsers(snap.val()));
         };
+
+        // ── Confetti ──────────────────────────────────────────────────────
+        function launchConfetti() {
+            const colors = ['#667eea','#764ba2','#f59e0b','#22c55e','#ef4444','#06b6d4','#f472b6','#fbbf24'];
+            const shapes = ['2px','50%'];
+            const count  = 120;
+            for (let i = 0; i < count; i++) {
+                setTimeout(() => {
+                    const el = document.createElement('div');
+                    el.className = 'confetti-piece';
+                    const size = 7 + Math.random() * 9;
+                    el.style.cssText = `
+                        left:${Math.random() * 100}vw;
+                        width:${size}px; height:${size * (0.4 + Math.random() * 0.8)}px;
+                        background:${colors[Math.floor(Math.random()*colors.length)]};
+                        border-radius:${shapes[Math.floor(Math.random()*shapes.length)]};
+                        animation-duration:${2 + Math.random() * 2}s;
+                        animation-delay:0s;
+                    `;
+                    document.body.appendChild(el);
+                    el.addEventListener('animationend', () => el.remove());
+                }, i * 18);
+            }
+        }
 
         function escapeHtml(str) {
             return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
