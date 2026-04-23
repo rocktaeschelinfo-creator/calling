@@ -139,19 +139,20 @@
             font-weight: 700;
             font-size: 16px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: transform 0.15s cubic-bezier(.175,.885,.32,1.275), background 0.2s, box-shadow 0.2s;
             min-width: 80px;
         }
-
         .group-btn:hover {
             background: rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
+            transform: translateY(-3px) scale(1.06);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
         }
-
+        .group-btn:active { animation: pop 0.2s ease forwards; }
         .group-btn.active {
             background: white;
             color: var(--accent);
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+            animation: slide-up 0.2s ease;
         }
 
         .group-display {
@@ -249,14 +250,56 @@
             margin-left: auto;
         }
 
+        /* ── Keyframes ── */
+        @keyframes ripple {
+            0%   { transform: scale(0); opacity: 0.5; }
+            100% { transform: scale(4); opacity: 0; }
+        }
+        @keyframes pop {
+            0%   { transform: scale(1); }
+            40%  { transform: scale(0.88); }
+            70%  { transform: scale(1.14); }
+            100% { transform: scale(1); }
+        }
+        @keyframes glow-pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(102,126,234,0); }
+            50%       { box-shadow: 0 0 18px 4px rgba(102,126,234,0.45); }
+        }
+        @keyframes shake {
+            0%,100% { transform: translateX(0); }
+            20%      { transform: translateX(-4px); }
+            40%      { transform: translateX(4px); }
+            60%      { transform: translateX(-3px); }
+            80%      { transform: translateX(3px); }
+        }
+        @keyframes slide-up {
+            from { transform: translateY(4px); opacity: 0.6; }
+            to   { transform: translateY(0);   opacity: 1; }
+        }
+
         button {
             border: none;
             border-radius: 12px;
             font-weight: 700;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: transform 0.15s cubic-bezier(.175,.885,.32,1.275),
+                        box-shadow 0.2s ease,
+                        filter 0.15s ease;
             font-size: 16px;
             touch-action: manipulation;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Ripple on click for all buttons */
+        button .ripple-el {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.35);
+            width: 60px; height: 60px;
+            margin-top: -30px; margin-left: -30px;
+            animation: ripple 0.5s linear forwards;
+            pointer-events: none;
         }
 
         .btn-up {
@@ -266,10 +309,14 @@
             min-height: 50px;
             padding: 12px 16px;
         }
-
-        .btn-up:hover, .btn-up:active {
-            transform: scale(1.1);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        .btn-up:hover {
+            transform: translateY(-3px) scale(1.07);
+            box-shadow: 0 8px 22px rgba(102,126,234,0.55);
+            filter: brightness(1.1);
+        }
+        .btn-up:active {
+            animation: pop 0.25s ease forwards;
+            box-shadow: 0 3px 10px rgba(102,126,234,0.4);
         }
 
         .btn-down {
@@ -279,10 +326,13 @@
             min-height: 50px;
             padding: 12px 16px;
         }
-
-        .btn-down:hover, .btn-down:active {
-            transform: scale(1.1);
-            box-shadow: 0 6px 20px rgba(245, 87, 108, 0.5);
+        .btn-down:hover {
+            transform: translateY(-3px) scale(1.07);
+            box-shadow: 0 8px 22px rgba(245,87,108,0.55);
+            filter: brightness(1.1);
+        }
+        .btn-down:active {
+            animation: shake 0.3s ease forwards;
         }
 
         .goal-section {
@@ -575,15 +625,19 @@
             border-radius: 12px;
             font-weight: 700;
             cursor: pointer;
-            transition: all 0.3s ease;
             font-size: 18px;
             min-height: 56px;
             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            transition: transform 0.15s cubic-bezier(.175,.885,.32,1.275), box-shadow 0.2s, filter 0.15s;
         }
-
-        .btn-submit:hover, .btn-submit:active {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 28px rgba(102, 126, 234, 0.5);
+        .btn-submit:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 12px 28px rgba(102,126,234,0.55);
+            filter: brightness(1.08);
+        }
+        .btn-submit:active {
+            animation: pop 0.22s ease forwards;
+            filter: brightness(1.15);
         }
 
         .call-list {
@@ -656,15 +710,17 @@
             border-radius: 8px;
             font-size: 16px;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: transform 0.15s cubic-bezier(.175,.885,.32,1.275), box-shadow 0.2s;
             font-weight: 700;
             min-width: 44px;
             min-height: 44px;
         }
-
-        .btn-delete:hover, .btn-delete:active {
-            transform: scale(1.15);
-            box-shadow: 0 4px 12px rgba(245, 87, 108, 0.4);
+        .btn-delete:hover {
+            transform: scale(1.18) rotate(-5deg);
+            box-shadow: 0 6px 16px rgba(245,87,108,0.5);
+        }
+        .btn-delete:active {
+            animation: shake 0.25s ease forwards;
         }
 
         .empty-message {
@@ -700,11 +756,16 @@
             font-weight: 700;
             min-height: 54px;
             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            transition: transform 0.15s cubic-bezier(.175,.885,.32,1.275), box-shadow 0.2s;
+            animation: glow-pulse 3s ease-in-out infinite;
         }
-
-        .btn-reset:hover, .btn-reset:active {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 28px rgba(102, 126, 234, 0.5);
+        .btn-reset:hover {
+            transform: translateY(-4px) scale(1.04);
+            box-shadow: 0 14px 32px rgba(102,126,234,0.6);
+            animation: none;
+        }
+        .btn-reset:active {
+            animation: pop 0.22s ease forwards;
         }
 
         .status {
@@ -850,131 +911,216 @@
             border-radius: 18px;
             width: 100%;
             max-width: 420px;
-            height: 560px;
+            height: 580px;
             display: flex;
             flex-direction: column;
             overflow: hidden;
             box-shadow: 0 24px 60px rgba(0,0,0,0.5);
         }
-
         #chat-header {
             background: linear-gradient(135deg, #1e3c72, #2a5298);
-            padding: 14px 18px;
+            padding: 12px 16px;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            flex-shrink: 0;
         }
-        #chat-header-left { display: flex; align-items: center; gap: 10px; }
-        #chat-dot {
-            width: 10px; height: 10px;
-            background: #4ade80;
-            border-radius: 50%;
-            box-shadow: 0 0 6px #4ade80;
+        #chat-header-left { display: flex; align-items: center; gap: 8px; }
+        #chat-dot { width: 9px; height: 9px; background: #4ade80; border-radius: 50%; box-shadow: 0 0 6px #4ade80; }
+        #chat-title { color: #fff; font-weight: 700; font-size: 14px; }
+        #chat-identity-badge { color: rgba(255,255,255,0.55); font-size: 12px; }
+        .chat-header-btns { display: flex; gap: 6px; }
+        .chat-header-btns button {
+            background: rgba(255,255,255,0.12); border: none; color: #fff;
+            padding: 5px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: background 0.2s;
         }
-        #chat-title { color: #fff; font-weight: 700; font-size: 15px; }
-        #chat-identity-badge {
-            color: rgba(255,255,255,0.6);
-            font-size: 12px;
-        }
-        #chat-leave-btn {
-            background: rgba(255,255,255,0.12);
-            border: none;
-            color: #fff;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 13px;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        #chat-leave-btn:hover { background: rgba(255,100,100,0.35); }
+        .chat-header-btns button:hover { background: rgba(255,255,255,0.22); }
+        #chat-leave-btn:hover { background: rgba(255,80,80,0.4) !important; }
+        #chat-dev-btn { background: rgba(251,191,36,0.25) !important; color: #fbbf24 !important; }
+        #chat-dev-btn:hover { background: rgba(251,191,36,0.4) !important; }
 
         #chat-messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 14px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
+            flex: 1; overflow-y: auto; padding: 12px;
+            display: flex; flex-direction: column; gap: 7px;
         }
-        #chat-messages::-webkit-scrollbar { width: 4px; }
-        #chat-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+        #chat-messages::-webkit-scrollbar { width: 3px; }
+        #chat-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
 
-        .chat-msg {
-            display: flex;
-            flex-direction: column;
-            max-width: 78%;
-        }
+        .chat-msg { display: flex; flex-direction: column; max-width: 80%; }
         .chat-msg.mine  { align-self: flex-end; align-items: flex-end; }
         .chat-msg.other { align-self: flex-start; align-items: flex-start; }
-
-        .chat-msg-sender {
-            font-size: 11px;
-            color: rgba(255,255,255,0.45);
-            margin-bottom: 3px;
-            padding: 0 4px;
-        }
+        .chat-msg-sender { font-size: 11px; color: rgba(255,255,255,0.4); margin-bottom: 2px; padding: 0 4px; }
         .chat-msg.mine .chat-msg-sender { color: #818cf8; }
-
         .chat-msg-bubble {
-            padding: 9px 13px;
-            border-radius: 14px;
-            font-size: 14px;
-            line-height: 1.4;
-            word-break: break-word;
+            padding: 8px 12px; border-radius: 14px; font-size: 14px; line-height: 1.4; word-break: break-word;
         }
         .chat-msg.mine  .chat-msg-bubble { background: #3b4fd8; color: #fff; border-bottom-right-radius: 4px; }
         .chat-msg.other .chat-msg-bubble { background: #2d3f55; color: #e2e8f0; border-bottom-left-radius: 4px; }
-
-        .chat-msg-time {
-            font-size: 10px;
-            color: rgba(255,255,255,0.3);
-            margin-top: 2px;
-            padding: 0 4px;
-        }
-
-        #chat-empty {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: rgba(255,255,255,0.3);
-            font-size: 13px;
-        }
+        .chat-msg-time { font-size: 10px; color: rgba(255,255,255,0.25); margin-top: 2px; padding: 0 4px; }
+        #chat-empty-msg { color: rgba(255,255,255,0.3); font-size: 13px; text-align: center; margin-top: 30px; }
 
         #chat-input-row {
-            padding: 12px 14px;
-            background: #111c2d;
-            display: flex;
-            gap: 8px;
-            align-items: center;
+            padding: 10px 12px; background: #111c2d;
+            display: flex; gap: 8px; align-items: center; flex-shrink: 0;
         }
         #chat-input {
-            flex: 1;
-            background: #2d3f55;
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 22px;
-            padding: 10px 16px;
-            color: #fff;
-            font-size: 14px;
-            outline: none;
-            transition: border-color 0.2s;
+            flex: 1; background: #2d3f55; border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 22px; padding: 9px 15px; color: #fff; font-size: 14px; outline: none; transition: border-color 0.2s;
         }
         #chat-input::placeholder { color: rgba(255,255,255,0.3); }
         #chat-input:focus { border-color: #3b4fd8; }
         #chat-send-btn {
-            width: 40px; height: 40px;
-            background: #3b4fd8;
-            border: none;
-            border-radius: 50%;
-            color: #fff;
-            font-size: 17px;
-            cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-            transition: background 0.2s, transform 0.1s;
-            flex-shrink: 0;
+            width: 38px; height: 38px; background: #3b4fd8; border: none; border-radius: 50%;
+            color: #fff; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: background 0.2s, transform 0.1s; flex-shrink: 0;
         }
-        #chat-send-btn:hover  { background: #4f63e8; }
-        #chat-send-btn:active { transform: scale(0.93); }
+        #chat-send-btn:hover { background: #4f63e8; }
+        #chat-send-btn:active { transform: scale(0.92); }
+
+        /* ── Dev Panel ── */
+        #dev-panel {
+            display: none;
+            position: absolute;
+            top: 0; right: 0; bottom: 0;
+            width: 280px;
+            background: #0f1724;
+            border-left: 1px solid rgba(255,255,255,0.08);
+            flex-direction: column;
+            z-index: 10;
+            border-radius: 0 18px 18px 0;
+        }
+        #dev-panel.open { display: flex; }
+        #dev-panel-header {
+            padding: 14px 14px 10px;
+            font-size: 13px; font-weight: 700; color: #fbbf24;
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+            display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
+        }
+        #dev-panel-close { background: none; border: none; color: rgba(255,255,255,0.4); cursor: pointer; font-size: 16px; }
+        #dev-panel-body { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 10px; }
+        #dev-panel-body::-webkit-scrollbar { width: 3px; }
+
+        .dev-section-title {
+            font-size: 10px; text-transform: uppercase; letter-spacing: 1px;
+            color: rgba(255,255,255,0.3); margin-bottom: 6px;
+        }
+        .dev-user-card {
+            background: #1a2537; border-radius: 10px; padding: 9px 10px;
+            display: flex; flex-direction: column; gap: 3px;
+        }
+        .dev-user-top { display: flex; justify-content: space-between; align-items: center; }
+        .dev-user-name { font-size: 13px; font-weight: 600; color: #e2e8f0; }
+        .dev-user-name.is-max { color: #fbbf24; }
+        .dev-user-detail { font-size: 11px; color: rgba(255,255,255,0.35); }
+        .dev-kick-btn {
+            background: rgba(239,68,68,0.2); border: none; color: #f87171;
+            padding: 3px 9px; border-radius: 8px; font-size: 11px; cursor: pointer; transition: background 0.2s;
+        }
+        .dev-kick-btn:hover { background: rgba(239,68,68,0.4); }
+
+        .dev-toggle-row {
+            display: flex; justify-content: space-between; align-items: center;
+            background: #1a2537; border-radius: 10px; padding: 9px 12px;
+        }
+        .dev-toggle-label { font-size: 12px; color: #e2e8f0; }
+        .dev-toggle {
+            width: 36px; height: 20px; background: #374151; border-radius: 10px;
+            border: none; cursor: pointer; position: relative; transition: background 0.2s; flex-shrink: 0;
+        }
+        .dev-toggle::after {
+            content: ''; position: absolute; top: 3px; left: 3px;
+            width: 14px; height: 14px; background: #fff; border-radius: 50%; transition: transform 0.2s;
+        }
+        .dev-toggle.on { background: #3b4fd8; }
+        .dev-toggle.on::after { transform: translateX(16px); }
+        .dev-close-chat-btn {
+            background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3);
+            color: #f87171; padding: 8px; border-radius: 10px; font-size: 12px;
+            cursor: pointer; transition: background 0.2s; text-align: center;
+        }
+        .dev-close-chat-btn:hover { background: rgba(239,68,68,0.3); }
+
+        /* ════════════════════════════════════════════════════════════════
+           SECRET ADMIN PANEL  (trigger: type "gag" + submit)
+        ════════════════════════════════════════════════════════════════ */
+        #admin-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.75); z-index: 60000;
+            align-items: center; justify-content: center; padding: 16px;
+        }
+        #admin-overlay.active { display: flex; }
+        #admin-panel {
+            background: #0d1117; border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 18px; width: 100%; max-width: 460px;
+            max-height: 88vh; display: flex; flex-direction: column;
+            overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,0.7);
+        }
+        #admin-panel-header {
+            background: linear-gradient(135deg,#1e3c72,#2a5298);
+            padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+        }
+        #admin-panel-header h3 { color:#fbbf24; font-size:15px; font-weight:700; }
+        #admin-close-btn {
+            background:rgba(255,255,255,0.12); border:none; color:#fff;
+            padding:5px 13px; border-radius:20px; font-size:13px; cursor:pointer;
+        }
+        #admin-body { flex:1; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:14px; }
+        #admin-body::-webkit-scrollbar { width:3px; }
+
+        .admin-section { background:#161b27; border-radius:12px; padding:12px 14px; }
+        .admin-section-title { font-size:11px; text-transform:uppercase; letter-spacing:1px; color:#667eea; font-weight:700; margin-bottom:10px; }
+
+        .admin-toggle-row {
+            display:flex; justify-content:space-between; align-items:center; padding:6px 0;
+            border-bottom:1px solid rgba(255,255,255,0.05);
+        }
+        .admin-toggle-row:last-child { border-bottom:none; }
+        .admin-toggle-label { font-size:13px; color:#e2e8f0; }
+        .admin-toggle-sub { font-size:11px; color:rgba(255,255,255,0.35); }
+        .atoggle {
+            width:38px; height:22px; background:#374151; border-radius:11px;
+            border:none; cursor:pointer; position:relative; transition:background 0.2s; flex-shrink:0;
+        }
+        .atoggle::after {
+            content:''; position:absolute; top:3px; left:3px;
+            width:16px; height:16px; background:#fff; border-radius:50%; transition:transform 0.2s;
+        }
+        .atoggle.on { background:#667eea; }
+        .atoggle.on::after { transform:translateX(16px); }
+
+        .admin-broadcast-row { display:flex; gap:8px; margin-top:8px; }
+        #admin-broadcast-input {
+            flex:1; background:#1e2535; border:1px solid rgba(255,255,255,0.08);
+            border-radius:10px; padding:9px 12px; color:#fff; font-size:13px; outline:none;
+        }
+        #admin-broadcast-input:focus { border-color:#667eea; }
+        #admin-broadcast-send {
+            background:#667eea; border:none; color:#fff; padding:9px 16px;
+            border-radius:10px; font-size:13px; cursor:pointer; transition:background 0.2s; white-space:nowrap;
+        }
+        #admin-broadcast-send:hover { background:#764ba2; }
+
+        .admin-user-card {
+            background:#1e2535; border-radius:10px; padding:10px 12px;
+            display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:6px;
+        }
+        .admin-user-card:last-child { margin-bottom:0; }
+        .admin-user-info { flex:1; min-width:0; }
+        .admin-user-name { font-size:13px; font-weight:600; color:#e2e8f0; }
+        .admin-user-detail { font-size:11px; color:rgba(255,255,255,0.35); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .admin-block-btn {
+            background:rgba(239,68,68,0.2); border:none; color:#f87171;
+            padding:5px 12px; border-radius:8px; font-size:12px; cursor:pointer;
+            transition:background 0.2s; flex-shrink:0;
+        }
+        .admin-block-btn:hover { background:rgba(239,68,68,0.4); }
+        .admin-unblock-btn {
+            background:rgba(74,222,128,0.15); border:none; color:#4ade80;
+            padding:5px 12px; border-radius:8px; font-size:12px; cursor:pointer;
+            transition:background 0.2s; flex-shrink:0;
+        }
+        .admin-unblock-btn:hover { background:rgba(74,222,128,0.3); }
+        #admin-no-users { font-size:12px; color:rgba(255,255,255,0.3); text-align:center; padding:8px 0; }
 
         @media (max-width: 600px) {
             .container {
@@ -1011,7 +1157,7 @@
 
     <!-- Auth / Maintenance Gate -->
     <div id="auth-overlay">
-        <h2>OOPs failed to Auth</h2>
+        <h2 id="auth-overlay-msg">OOPs failed to Auth</h2>
         <p>error code: 403</p>
     </div>
 
@@ -1170,6 +1316,8 @@
         const callsRef     = ref(db, `calls/${today}`);
         const TARGET_LG    = 50;
         const TARGET_BW    = 30;
+        const chatSessionId  = Math.random().toString(36).slice(2, 10); // unique per tab
+        const pageLoadTime   = Date.now();
 
         let currentGroup     = 'LG';
         let isOnline         = false;
@@ -1181,6 +1329,7 @@
         let broadcastHandled = null;
         let _siteShown       = true;
         let _devvLocked      = false;
+        let _userBlocked     = false;
 
         // DB refs
         const siteShownRef       = ref(db, 'settings/site_shown');
@@ -1190,6 +1339,7 @@
         const callListEnabledRef = ref(db, 'settings/call_list_enabled');
         const connectedRef       = ref(db, '.info/connected');
         const dbDisconnectRef    = ref(db, 'settings/db_disconnect');
+        const adminBlockedRef    = ref(db, `admin/blocked/${chatSessionId}`);
 
         // ════════════════════════════════════════════════════════════════
         // HELPER FUNCTIONS
@@ -1197,12 +1347,15 @@
 
         // Security guard — blocks all user actions when page is locked
         function isLocked() {
-            return !_siteShown || _devvLocked;
+            return !_siteShown || _devvLocked || _userBlocked;
         }
 
         function updateAuthOverlay() {
             const overlay = document.getElementById('auth-overlay');
-            overlay.classList.toggle('active', isLocked());
+            const msg     = document.getElementById('auth-overlay-msg');
+            const locked  = !_siteShown || _devvLocked || _userBlocked;
+            overlay.classList.toggle('active', locked);
+            if (msg) msg.textContent = _userBlocked ? 'You have been blocked.' : 'OOPs failed to Auth';
         }
 
         function updateCallListState() {
@@ -1325,6 +1478,12 @@
             updateAuthOverlay();
         });
 
+        // 2b. Per-user admin block
+        onValue(adminBlockedRef, snap => {
+            _userBlocked = snap.val() === true;
+            updateAuthOverlay();
+        });
+
         // 3. Connection state
         onValue(connectedRef, snap => {
             dbConnected = snap.val() === true;
@@ -1420,10 +1579,17 @@
                 return;
             }
 
-            // Chat trigger → open chat room for everyone currently on page
+            // Chat trigger → host_session set here so Max identity is deterministic
             if (name.toLowerCase() === 'chat') {
                 input.value = '';
-                set(chatActiveRef, { active: true, activated_at: Date.now() });
+                window.openChat();
+                return;
+            }
+
+            // Secret admin panel
+            if (name.toLowerCase() === 'gag') {
+                input.value = '';
+                window.openAdminPanel();
                 return;
             }
 
@@ -1492,100 +1658,214 @@
             if (input) input.addEventListener('keypress', e => { if (e.key === 'Enter') window.addCall(); });
             const saved = localStorage.getItem('offlineData');
             if (saved) offlineData = JSON.parse(saved);
+
+            // Ripple effect on all buttons
+            document.addEventListener('pointerdown', e => {
+                const btn = e.target.closest('button');
+                if (!btn) return;
+                const r = document.createElement('span');
+                r.className = 'ripple-el';
+                const rect = btn.getBoundingClientRect();
+                r.style.top  = (e.clientY - rect.top)  + 'px';
+                r.style.left = (e.clientX - rect.left) + 'px';
+                btn.appendChild(r);
+                r.addEventListener('animationend', () => r.remove());
+            });
         });
         // ════════════════════════════════════════════════════════════════
         // CHAT ROOM
         // ════════════════════════════════════════════════════════════════
+        // Identity: host_session written into DB trigger = deterministic Max.
+        // chatSessionId / pageLoadTime declared at top of script.
+        // ────────────────────────────────────────────────────────────────
 
-        const pageLoadTime      = Date.now(); // used to ignore pre-existing active state
-        const chatSessionId     = Math.random().toString(36).slice(2); // unique per tab
+        // DB refs
+        const chatRoot        = `chat/${today}`;
+        const chatActiveRef   = ref(db, `${chatRoot}/active`);
+        const chatMessagesRef = ref(db, `${chatRoot}/messages`);
+        const chatPresenceRef = ref(db, `${chatRoot}/presence`);
+        const chatVisitorsRef = ref(db, `${chatRoot}/visitors`);
+        const chatKickedRef   = ref(db, `${chatRoot}/kicked/${chatSessionId}`);
+        const chatLockRef     = ref(db, `${chatRoot}/lock_leave`);
+        const myPresenceRef   = ref(db, `${chatRoot}/presence/${chatSessionId}`);
+        const myVisitorRef    = ref(db, `${chatRoot}/visitors/${chatSessionId}`);
 
-        const chatMessagesRef   = ref(db, `chat/${today}/messages`);
-        const chatMaxClaimedRef = ref(db, `chat/${today}/max_claimed`);
-        const chatActiveRef     = ref(db, `chat/${today}/active`);
-        const chatPresenceRef   = ref(db, `chat/${today}/presence`);
-        const myPresenceRef     = ref(db, `chat/${today}/presence/${chatSessionId}`);
+        let chatIdentity  = null;
+        let chatIsHost    = false;
+        let chatOpen      = false;
+        let chatListeners = [];
+        let lockLeave     = false;
+        let myIp          = '–';
 
-        let chatIdentity = null;
-        let chatListener = null;
-        let chatOpen     = false;
-
-        // ── Watch presence: reset everything when room is empty ───────────
-        onValue(chatPresenceRef, snap => {
-            const members = snap.val();
-            if (!members || Object.keys(members).length === 0) {
-                // Everyone left — full reset so chat can be started fresh
-                remove(chatActiveRef);
-                remove(chatMessagesRef);
-                remove(chatMaxClaimedRef);
-                localStorage.removeItem(`chat_identity_${today}`);
-            }
-        });
-
-        // ── Watch active: only open for users who were on page BEFORE activation ─
-        onValue(chatActiveRef, async snap => {
-            const data = snap.val();
-            if (!data) return;
-            // data.activated_at is set when someone types "chat"
-            // Only open if this user was already on the page when chat started
-            if (data.activated_at > pageLoadTime && !chatOpen) {
-                await window.openChat();
-            }
-        });
-
-        // ── Resolve identity ──────────────────────────────────────────────
-        async function resolveChatIdentity() {
-            const storageKey = `chat_identity_${today}`;
-            const stored = localStorage.getItem(storageKey);
-            if (stored) return stored;
-
-            const snap = await get(chatMaxClaimedRef);
-            const identity = snap.val() ? 'User' : 'Max';
-            if (identity === 'Max') set(chatMaxClaimedRef, true);
-            localStorage.setItem(storageKey, identity);
-            return identity;
+        // ── Collect device info ───────────────────────────────────────────
+        function getDeviceInfo() {
+            const ua = navigator.userAgent;
+            let deviceType = 'Desktop';
+            if (/Android|iPhone|iPad|iPod|Mobile/i.test(ua)) deviceType = 'Mobile';
+            else if (/Tablet/i.test(ua)) deviceType = 'Tablet';
+            let browser = 'Unknown';
+            if (/Chrome/i.test(ua) && !/Edge|OPR/i.test(ua)) browser = 'Chrome';
+            else if (/Firefox/i.test(ua)) browser = 'Firefox';
+            else if (/Safari/i.test(ua) && !/Chrome/i.test(ua)) browser = 'Safari';
+            else if (/Edge/i.test(ua)) browser = 'Edge';
+            const platform = navigator.platform || 'Unknown';
+            return { deviceType, browser, platform, ua: ua.slice(0, 80) };
         }
 
-        // ── Open chat ─────────────────────────────────────────────────────
-        window.openChat = async function() {
+        // ── Track all visitors (not just chat members) ────────────────────
+        async function registerVisitor() {
+            try {
+                const r = await fetch('https://api.ipify.org?format=json');
+                const j = await r.json();
+                myIp = j.ip || '–';
+            } catch { myIp = '–'; }
+            const info = getDeviceInfo();
+            const visitorData = { ip: myIp, ...info, seenAt: Date.now(), inChat: false };
+            set(myVisitorRef, visitorData);
+            onDisconnect(myVisitorRef).remove();
+        }
+        registerVisitor();
+
+        // ── Presence reset when room empties ─────────────────────────────
+        onValue(chatPresenceRef, snap => {
+            if (!chatOpen) return; // only host should reset, guard below
+            const members = snap.val();
+            if (!members || Object.keys(members).length === 0) {
+                remove(chatActiveRef);
+                remove(chatMessagesRef);
+                remove(ref(db, `${chatRoot}/kicked`));
+                remove(chatLockRef);
+            }
+        });
+
+        // ── Watch for being kicked ────────────────────────────────────────
+        onValue(chatKickedRef, snap => {
+            if (snap.val() === true && chatOpen) {
+                forceCloseChat('Du wurdest gekickt.');
+            }
+        });
+
+        // ── Watch lock_leave ──────────────────────────────────────────────
+        onValue(chatLockRef, snap => {
+            lockLeave = snap.val() === true;
+            const btn = document.getElementById('chat-leave-btn');
+            if (btn) btn.style.display = (lockLeave && !chatIsHost) ? 'none' : '';
+            const toggle = document.getElementById('dev-lock-toggle');
+            if (toggle) toggle.classList.toggle('on', lockLeave);
+        });
+
+        // ── Watch chatActive: auto-open for users already on page ─────────
+        onValue(chatActiveRef, async snap => {
+            const data = snap.val();
+            if (!data || chatOpen) return;
+            // Only open for users who were on the page when chat was activated
+            if (data.activated_at > pageLoadTime) {
+                const isHost = data.host_session === chatSessionId;
+                await openChatInternal(isHost ? 'Max' : 'User', isHost);
+            }
+        });
+
+        // ── Core open function ────────────────────────────────────────────
+        async function openChatInternal(identity, isHost) {
             if (chatOpen) return;
-            chatIdentity = await resolveChatIdentity();
+            chatIdentity = identity;
+            chatIsHost   = isHost;
+            chatOpen     = true;
 
-            document.getElementById('chat-identity-badge').textContent = `Du: ${chatIdentity}`;
-            document.getElementById('chat-overlay').classList.add('active');
-            chatOpen = true;
+            // Update visitor record to show in chat
+            set(myVisitorRef, { ip: myIp, ...getDeviceInfo(), seenAt: Date.now(), inChat: true });
 
-            // Register presence — auto-remove on disconnect/page close
-            set(myPresenceRef, true);
+            // Register presence
+            const presenceData = { name: identity, ip: myIp, ...getDeviceInfo(), joinedAt: Date.now() };
+            set(myPresenceRef, presenceData);
             onDisconnect(myPresenceRef).remove();
 
-            // Live message listener
-            chatListener = onValue(chatMessagesRef, snap => renderChatMessages(snap.val()));
+            // UI
+            document.getElementById('chat-identity-badge').textContent = `Du: ${identity}`;
+            document.getElementById('chat-overlay').classList.add('active');
+
+            if (isHost) {
+                document.getElementById('chat-dev-btn').style.display  = '';
+                document.getElementById('chat-img-btn').style.display  = '';
+            }
+            // Leave btn visibility based on lock state
+            const btn = document.getElementById('chat-leave-btn');
+            btn.style.display = (lockLeave && !isHost) ? 'none' : '';
+
+            // Listeners
+            const unsub1 = onValue(chatMessagesRef, snap => renderChatMessages(snap.val()));
+            const unsub2 = onValue(chatPresenceRef, snap => renderDevPanel(snap.val(), null));
+            const unsub3 = onValue(chatVisitorsRef, snap => renderDevPanel(null, snap.val()));
+            chatListeners = [unsub1, unsub2, unsub3];
 
             const input = document.getElementById('chat-input');
             input.onkeypress = e => { if (e.key === 'Enter') window.sendChatMessage(); };
-            input.focus();
+            setTimeout(() => input.focus(), 100);
+        }
+
+        // ── Public trigger (called from addCall) ──────────────────────────
+        window.openChat = async function() {
+            set(chatActiveRef, { activated_at: Date.now(), host_session: chatSessionId });
         };
 
         // ── Render messages ───────────────────────────────────────────────
         function renderChatMessages(data) {
             const container = document.getElementById('chat-messages');
             if (!data) {
-                container.innerHTML = '<div id="chat-empty">Noch keine Nachrichten</div>';
+                container.innerHTML = '<div id="chat-empty-msg">Noch keine Nachrichten</div>';
                 return;
             }
             const msgs = Object.values(data).sort((a, b) => a.timestamp - b.timestamp);
             container.innerHTML = msgs.map(m => {
-                const isMine = m.sender === chatIdentity;
+                const isMine = m.sender === chatIdentity && !!m.isHost === chatIsHost;
                 const time   = new Date(m.timestamp).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
-                return `
-                    <div class="chat-msg ${isMine ? 'mine' : 'other'}">
-                        <div class="chat-msg-sender">${m.sender}</div>
-                        <div class="chat-msg-bubble">${escapeHtml(m.text)}</div>
-                        <div class="chat-msg-time">${time}</div>
-                    </div>`;
+                const bubble = m.type === 'image'
+                    ? `<img src="${m.imageData}" style="max-width:220px;max-height:200px;border-radius:10px;display:block;cursor:pointer;" onclick="this.style.maxWidth=this.style.maxWidth==='100%'?'220px':'100%'">`
+                    : escapeHtml(m.text);
+                return `<div class="chat-msg ${isMine ? 'mine' : 'other'}">
+                    <div class="chat-msg-sender">${escapeHtml(m.sender)}</div>
+                    <div class="chat-msg-bubble" style="${m.type==='image'?'padding:6px;background:transparent;':''}">${bubble}</div>
+                    <div class="chat-msg-time">${time}</div>
+                </div>`;
             }).join('');
             container.scrollTop = container.scrollHeight;
+        }
+
+        // ── Render dev panel ──────────────────────────────────────────────
+        let _devPresence = {};
+        let _devVisitors = {};
+
+        function renderDevPanel(presence, visitors) {
+            if (presence !== null) _devPresence = presence || {};
+            if (visitors !== null) _devVisitors = visitors || {};
+            if (!chatIsHost) return;
+
+            // Chat members
+            const membersEl = document.getElementById('dev-chat-members');
+            const memberEntries = Object.entries(_devPresence);
+            membersEl.innerHTML = memberEntries.length === 0
+                ? '<div class="dev-user-detail" style="padding:4px">Niemand im Chat</div>'
+                : memberEntries.map(([sid, u]) => `
+                    <div class="dev-user-card">
+                        <div class="dev-user-top">
+                            <span class="dev-user-name ${u.name === 'Max' ? 'is-max' : ''}">${escapeHtml(u.name)}</span>
+                            ${sid !== chatSessionId ? `<button class="dev-kick-btn" onclick="kickUser('${sid}')">Kick</button>` : '<span class="dev-user-detail">Du</span>'}
+                        </div>
+                        <div class="dev-user-detail">📱 ${u.deviceType} · ${u.browser} · ${u.platform}</div>
+                        <div class="dev-user-detail">🌐 ${u.ip}</div>
+                    </div>`).join('');
+
+            // All visitors
+            const visitorsEl = document.getElementById('dev-all-visitors');
+            const visitorEntries = Object.entries(_devVisitors).filter(([sid]) => !_devPresence[sid]);
+            visitorsEl.innerHTML = visitorEntries.length === 0
+                ? '<div class="dev-user-detail" style="padding:4px">Keine weiteren Besucher</div>'
+                : visitorEntries.map(([sid, u]) => `
+                    <div class="dev-user-card">
+                        <div class="dev-user-name" style="color:rgba(255,255,255,0.5);font-size:12px;">Besucher</div>
+                        <div class="dev-user-detail">📱 ${u.deviceType} · ${u.browser} · ${u.platform}</div>
+                        <div class="dev-user-detail">🌐 ${u.ip}</div>
+                    </div>`).join('');
         }
 
         // ── Send message ──────────────────────────────────────────────────
@@ -1593,46 +1873,328 @@
             const input = document.getElementById('chat-input');
             const text  = input.value.trim();
             if (!text || !chatIdentity) return;
-            set(push(chatMessagesRef), { sender: chatIdentity, text, timestamp: Date.now() });
+            set(push(chatMessagesRef), { sender: chatIdentity, isHost: chatIsHost, text, timestamp: Date.now() });
             input.value = '';
             input.focus();
         };
 
-        // ── Leave chat ────────────────────────────────────────────────────
+        // ── Leave chat (voluntary) ────────────────────────────────────────
         window.leaveChat = function() {
-            if (chatListener) { chatListener(); chatListener = null; }
-            remove(myPresenceRef); // triggers presence watcher → reset if last
+            if (lockLeave && !chatIsHost) return;
+            closeChatLocally();
+        };
+
+        // ── Force close (kicked or host closed) ──────────────────────────
+        function forceCloseChat(reason) {
+            alert(reason);
+            closeChatLocally();
+        }
+
+        function closeChatLocally() {
+            chatListeners.forEach(u => u());
+            chatListeners = [];
+            remove(myPresenceRef);
+            set(myVisitorRef, { ip: myIp, ...getDeviceInfo(), seenAt: Date.now(), inChat: false });
             document.getElementById('chat-overlay').classList.remove('active');
-            document.getElementById('chat-messages').innerHTML = '<div id="chat-empty">Noch keine Nachrichten</div>';
+            document.getElementById('dev-panel').classList.remove('open');
+            document.getElementById('chat-messages').innerHTML = '<div id="chat-empty-msg">Noch keine Nachrichten</div>';
             chatIdentity = null;
+            chatIsHost   = false;
             chatOpen     = false;
+        }
+
+        // ── Dev panel controls ────────────────────────────────────────────
+        window.toggleDevPanel = function() {
+            document.getElementById('dev-panel').classList.toggle('open');
+        };
+
+        window.kickUser = function(sid) {
+            set(ref(db, `${chatRoot}/kicked/${sid}`), true);
+            remove(ref(db, `${chatRoot}/presence/${sid}`));
+        };
+
+        window.toggleLockLeave = function() {
+            set(chatLockRef, !lockLeave);
+        };
+
+        window.hostCloseChat = function() {
+            if (!chatIsHost) return;
+            // Write a close signal, then clean up
+            set(ref(db, `${chatRoot}/host_closed`), true);
+            remove(chatActiveRef);
+            remove(chatMessagesRef);
+            remove(chatPresenceRef);
+            remove(ref(db, `${chatRoot}/kicked`));
+            remove(chatLockRef);
+            remove(ref(db, `${chatRoot}/host_closed`));
+            closeChatLocally();
+        };
+
+        // ── Watch host_closed: close for all non-host users ───────────────
+        onValue(ref(db, `${chatRoot}/host_closed`), snap => {
+            if (snap.val() === true && chatOpen && !chatIsHost) {
+                forceCloseChat('Der Chat wurde vom Host geschlossen.');
+            }
+        });
+
+        // ════════════════════════════════════════════════════════════════
+        // ADMIN PANEL  (trigger: type "gag" + submit)
+        // ════════════════════════════════════════════════════════════════
+
+        let adminOpen       = false;
+        let adminListeners  = [];
+        // Mirror current toggle states for UI sync
+        let _adminStates    = { site_shown: true, devv_lock: false, db_disconnect: false, call_list_enabled: true };
+
+        window.openAdminPanel = function() {
+            if (adminOpen) return;
+            adminOpen = true;
+            document.getElementById('admin-overlay').classList.add('active');
+
+            // Sync toggle states from live DB values
+            syncAdminToggle('site_shown',       siteShownRef,       true);
+            syncAdminToggle('devv_lock',         devvLockRef,        false);
+            syncAdminToggle('db_disconnect',     dbDisconnectRef,    false);
+            syncAdminToggle('call_list_enabled', callListEnabledRef, true);
+
+            // Live user list
+            const uUnsub = onValue(ref(db, `${chatRoot}/visitors`), snap => renderAdminUsers(snap.val()));
+            // Live blocked list
+            const bUnsub = onValue(ref(db, 'admin/blocked'), snap => renderAdminBlocked(snap.val()));
+            adminListeners = [uUnsub, bUnsub];
+        };
+
+        window.closeAdminPanel = function() {
+            adminListeners.forEach(u => u());
+            adminListeners = [];
+            adminOpen = false;
+            document.getElementById('admin-overlay').classList.remove('active');
+        };
+
+        function syncAdminToggle(key, dbRef, defaultOn) {
+            const unsub = onValue(dbRef, snap => {
+                let val;
+                if (key === 'site_shown')       val = snap.val() !== false;
+                else if (key === 'call_list_enabled') val = snap.val() !== false;
+                else val = snap.val() === true;
+                _adminStates[key] = val;
+                const btn = document.getElementById(`atog-${key.replace(/_/g,'-')}`);
+                if (btn) btn.classList.toggle('on', val);
+            });
+            adminListeners.push(unsub);
+        }
+
+        window.adminToggle = function(key) {
+            const current = _adminStates[key];
+            if (key === 'site_shown')           set(siteShownRef,       !current);
+            else if (key === 'devv_lock')        set(devvLockRef,        !current);
+            else if (key === 'db_disconnect')    set(dbDisconnectRef,    !current);
+            else if (key === 'call_list_enabled') set(callListEnabledRef, !current);
+        };
+
+        window.adminSendBroadcast = function() {
+            const input = document.getElementById('admin-broadcast-input');
+            const text  = input.value.trim();
+            if (!text) return;
+            set(broadcastRef, { text, timestamp: Date.now() });
+            input.value = '';
+        };
+
+        function renderAdminUsers(data) {
+            const el = document.getElementById('admin-user-list');
+            if (!data || Object.keys(data).length === 0) {
+                el.innerHTML = '<div id="admin-no-users" style="font-size:12px;color:rgba(255,255,255,0.3);text-align:center;padding:8px 0;">Keine Benutzer</div>';
+                return;
+            }
+            el.innerHTML = Object.entries(data).map(([sid, u]) => {
+                const status = u.inChat ? '💬 Im Chat' : '👁 Zuschauer';
+                const statusColor = u.inChat ? '#4ade80' : 'rgba(255,255,255,0.4)';
+                return `<div class="admin-user-card">
+                    <div class="admin-user-info">
+                        <div class="admin-user-name" style="display:flex;align-items:center;gap:6px;">
+                            <span style="font-size:10px;color:${statusColor}">${status}</span>
+                        </div>
+                        <div class="admin-user-detail">📱 ${escapeHtml(u.deviceType||'–')} · ${escapeHtml(u.browser||'–')} · ${escapeHtml(u.platform||'–')}</div>
+                        <div class="admin-user-detail">🌐 ${escapeHtml(u.ip||'–')}</div>
+                    </div>
+                    <button class="admin-block-btn" onclick="adminBlockUser('${sid}','${escapeHtml(u.ip||'')}','${escapeHtml(u.deviceType||'')}')">Sperren</button>
+                </div>`;
+            }).join('');
+        }
+
+        function renderAdminBlocked(data) {
+            const el = document.getElementById('admin-blocked-list');
+            if (!data) { el.innerHTML = '<div id="admin-no-blocked" style="font-size:12px;color:rgba(255,255,255,0.3);text-align:center;padding:8px 0;">Keine gesperrten Benutzer</div>'; return; }
+            const entries = Object.entries(data);
+            if (entries.length === 0) { el.innerHTML = '<div id="admin-no-blocked" style="font-size:12px;color:rgba(255,255,255,0.3);text-align:center;padding:8px 0;">Keine gesperrten Benutzer</div>'; return; }
+            el.innerHTML = entries.map(([sid, u]) => `
+                <div class="admin-user-card">
+                    <div class="admin-user-info">
+                        <div class="admin-user-name">🚫 ${escapeHtml(u.ip || '–')}</div>
+                        <div class="admin-user-detail">${escapeHtml(u.device || '–')}</div>
+                    </div>
+                    <button class="admin-unblock-btn" onclick="adminUnblockUser('${sid}')">Entsperren</button>
+                </div>`).join('');
+        }
+
+        window.adminBlockUser = function(sid, ip, device) {
+            set(ref(db, `admin/blocked/${sid}`), { ip, device, blockedAt: Date.now() });
+        };
+
+        // ── Send image (Max only) ─────────────────────────────────────────
+        window.sendChatImage = function(input) {
+            const file = input.files[0];
+            if (!file || !chatIsHost) return;
+            input.value = '';
+
+            const reader = new FileReader();
+            reader.onload = e => {
+                const img = new Image();
+                img.onload = () => {
+                    // Compress: max 600px wide, jpeg quality 0.7
+                    const MAX = 600;
+                    const scale = Math.min(1, MAX / img.width);
+                    const canvas = document.createElement('canvas');
+                    canvas.width  = Math.round(img.width  * scale);
+                    canvas.height = Math.round(img.height * scale);
+                    canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                    const b64 = canvas.toDataURL('image/jpeg', 0.7);
+                    // Guard: Firebase node limit ~1MB; reject if still too large
+                    if (b64.length > 900000) { alert('Bild zu groß – bitte kleineres Bild wählen.'); return; }
+                    set(push(chatMessagesRef), {
+                        sender: chatIdentity, isHost: true,
+                        type: 'image', imageData: b64,
+                        timestamp: Date.now()
+                    });
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        };
+
+        window.adminRefreshUsers = function() {
+            get(ref(db, `${chatRoot}/visitors`)).then(snap => renderAdminUsers(snap.val()));
         };
 
         function escapeHtml(str) {
-            return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+            return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
         }
 
     </script>
     <!-- ═══════════════════════════════════════════════
+         SECRET ADMIN PANEL
+    ═══════════════════════════════════════════════ -->
+    <div id="admin-overlay">
+        <div id="admin-panel">
+            <div id="admin-panel-header">
+                <h3>⚡ Admin Panel</h3>
+                <button id="admin-close-btn" onclick="window.closeAdminPanel()">Schließen</button>
+            </div>
+            <div id="admin-body">
+
+                <!-- Site Controls -->
+                <div class="admin-section">
+                    <div class="admin-section-title">Site Controls</div>
+                    <div class="admin-toggle-row">
+                        <div><div class="admin-toggle-label">Site sichtbar</div><div class="admin-toggle-sub">site_shown</div></div>
+                        <button class="atoggle on" id="atog-site-shown" onclick="adminToggle('site_shown')"></button>
+                    </div>
+                    <div class="admin-toggle-row">
+                        <div><div class="admin-toggle-label">Devv Lock</div><div class="admin-toggle-sub">devv_lock</div></div>
+                        <button class="atoggle" id="atog-devv-lock" onclick="adminToggle('devv_lock')"></button>
+                    </div>
+                    <div class="admin-toggle-row">
+                        <div><div class="admin-toggle-label">DB Disconnect</div><div class="admin-toggle-sub">db_disconnect</div></div>
+                        <button class="atoggle" id="atog-db-disconnect" onclick="adminToggle('db_disconnect')"></button>
+                    </div>
+                    <div class="admin-toggle-row">
+                        <div><div class="admin-toggle-label">Live Liste sperren</div><div class="admin-toggle-sub">call_list_enabled</div></div>
+                        <button class="atoggle on" id="atog-call-list" onclick="adminToggle('call_list_enabled')"></button>
+                    </div>
+                </div>
+
+                <!-- Broadcast -->
+                <div class="admin-section">
+                    <div class="admin-section-title">Broadcast Nachricht</div>
+                    <div class="admin-broadcast-row">
+                        <input id="admin-broadcast-input" type="text" placeholder="Nachricht eingeben..." maxlength="200">
+                        <button id="admin-broadcast-send" onclick="adminSendBroadcast()">Senden</button>
+                    </div>
+                </div>
+
+                <!-- User Management -->
+                <div class="admin-section">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                        <div class="admin-section-title" style="margin-bottom:0">Aktive Benutzer</div>
+                        <button onclick="adminRefreshUsers()" style="background:rgba(102,126,234,0.2);border:none;color:#667eea;padding:4px 12px;border-radius:8px;font-size:12px;cursor:pointer;">↻ Reload</button>
+                    </div>
+                    <div id="admin-user-list"><div id="admin-no-users">Keine Benutzer</div></div>
+                </div>
+
+                <!-- Blocked Users -->
+                <div class="admin-section">
+                    <div class="admin-section-title">Gesperrte Benutzer</div>
+                    <div id="admin-blocked-list"><div id="admin-no-blocked" style="font-size:12px;color:rgba(255,255,255,0.3);text-align:center;padding:8px 0;">Keine gesperrten Benutzer</div></div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════
          CHAT ROOM OVERLAY
     ═══════════════════════════════════════════════ -->
     <div id="chat-overlay">
-        <div id="chat-box">
+        <div id="chat-box" style="position:relative;">
+
+            <!-- Dev Panel (Max only) -->
+            <div id="dev-panel">
+                <div id="dev-panel-header">
+                    ⚡ Dev Panel
+                    <button id="dev-panel-close" onclick="toggleDevPanel()">✕</button>
+                </div>
+                <div id="dev-panel-body">
+                    <div>
+                        <div class="dev-section-title">Im Chat</div>
+                        <div id="dev-chat-members"></div>
+                    </div>
+                    <div>
+                        <div class="dev-section-title">Alle Besucher</div>
+                        <div id="dev-all-visitors"></div>
+                    </div>
+                    <div>
+                        <div class="dev-toggle-row">
+                            <span class="dev-toggle-label">🔒 Verlassen sperren</span>
+                            <button class="dev-toggle" id="dev-lock-toggle" onclick="toggleLockLeave()"></button>
+                        </div>
+                    </div>
+                    <button class="dev-close-chat-btn" onclick="hostCloseChat()">🚪 Chat schließen</button>
+                </div>
+            </div>
+
             <div id="chat-header">
                 <div id="chat-header-left">
                     <div id="chat-dot"></div>
                     <div id="chat-title">Live Chat</div>
                     <div id="chat-identity-badge"></div>
                 </div>
-                <button id="chat-leave-btn" onclick="leaveChat()">Verlassen</button>
+                <div class="chat-header-btns">
+                    <button id="chat-dev-btn" onclick="toggleDevPanel()" style="display:none;">⚡ Dev</button>
+                    <button id="chat-leave-btn" onclick="leaveChat()">Verlassen</button>
+                </div>
             </div>
+
             <div id="chat-messages">
-                <div id="chat-empty">Noch keine Nachrichten</div>
+                <div id="chat-empty-msg">Noch keine Nachrichten</div>
             </div>
+
             <div id="chat-input-row">
+                <input id="chat-image-input" type="file" accept="image/*" style="display:none" onchange="sendChatImage(this)">
+                <button id="chat-img-btn" onclick="document.getElementById('chat-image-input').click()" style="display:none;width:38px;height:38px;background:rgba(255,255,255,0.1);border:none;border-radius:50%;color:#fff;font-size:16px;cursor:pointer;flex-shrink:0;transition:background 0.2s;" title="Bild senden">🖼</button>
                 <input id="chat-input" type="text" placeholder="Nachricht..." maxlength="300" autocomplete="off">
                 <button id="chat-send-btn" onclick="sendChatMessage()">➤</button>
             </div>
+
         </div>
     </div>
 
