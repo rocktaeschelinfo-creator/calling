@@ -230,9 +230,27 @@
             margin-bottom: 16px;
             padding: 18px;
             background: linear-gradient(135deg, var(--light-bg) 0%, #c3cfe2 100%);
-            border-radius: 14px;
-            transition: all 0.3s ease;
+            border-radius: 16px;
+            transition: transform 0.2s ease, box-shadow 0.25s ease, border-color 0.2s;
             border: 2px solid var(--border-light);
+            position: relative;
+            overflow: hidden;
+        }
+        .counter-row::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.15) 50%, transparent 100%);
+            transform: translateX(-100%);
+            transition: transform 0s;
+        }
+        .counter-row:hover::before {
+            transform: translateX(100%);
+            transition: transform 0.5s ease;
+        }
+        .counter-row:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(102,126,234,0.18);
         }
 
         body.dark-mode .counter-row {
@@ -476,6 +494,32 @@
             color: #c7254e;
             font-size: 18px;
             margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            user-select: none;
+            transition: opacity 0.2s;
+        }
+        .call-list-header:hover { opacity: 0.8; }
+        .call-list-header .header-left { display: flex; align-items: center; gap: 8px; }
+        .call-list-minimize {
+            font-size: 18px;
+            transition: transform 0.3s cubic-bezier(.175,.885,.32,1.275);
+            color: #c7254e;
+            line-height: 1;
+        }
+        .call-list-section.minimized .call-list-minimize { transform: rotate(-90deg); }
+        .call-list-collapsible {
+            overflow: hidden;
+            max-height: 2000px;
+            transition: max-height 0.45s cubic-bezier(.25,.8,.25,1), opacity 0.35s ease;
+            opacity: 1;
+        }
+        .call-list-section.minimized .call-list-collapsible {
+            max-height: 0;
+            opacity: 0;
+            pointer-events: none;
         }
 
         body.dark-mode .call-list-header {
@@ -592,13 +636,36 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px;
-            margin: 5px 0;
+            padding: 10px 14px;
+            margin: 6px 0;
             background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
-            border-radius: 10px;
+            border-radius: 12px;
             font-size: 14px;
             color: white;
             font-weight: 600;
+            gap: 10px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            animation: item-in 0.3s ease both;
+        }
+        .person-stat:hover {
+            transform: translateX(3px);
+            box-shadow: 0 4px 14px rgba(102,126,234,0.4);
+        }
+        .person-rank {
+            font-size: 20px;
+            line-height: 1;
+            flex-shrink: 0;
+            filter: drop-shadow(0 1px 3px rgba(0,0,0,0.3));
+        }
+        .person-rank.numbered {
+            font-size: 11px;
+            font-weight: 800;
+            color: rgba(255,255,255,0.6);
+            min-width: 22px;
+            text-align: center;
+            background: rgba(0,0,0,0.15);
+            border-radius: 6px;
+            padding: 3px 5px;
         }
 
         .person-name {
@@ -1461,6 +1528,57 @@
             animation: item-in 0.3s ease;
         }
 
+        /* ════════════════════════════════════════════════════════════════
+           TYPING INDICATOR
+        ════════════════════════════════════════════════════════════════ */
+        #chat-typing {
+            min-height: 18px; padding: 0 4px; margin-top: 2px;
+            font-size: 11px; color: rgba(255,255,255,0.4);
+            font-style: italic; transition: opacity 0.3s;
+        }
+
+        /* ════════════════════════════════════════════════════════════════
+           MATRIX EASTER EGG
+        ════════════════════════════════════════════════════════════════ */
+        #matrix-canvas {
+            display: none; position: fixed; inset: 0;
+            z-index: 88888; pointer-events: none;
+            opacity: 0; transition: opacity 0.5s;
+        }
+        #matrix-canvas.active { display: block; opacity: 1; }
+
+        /* ════════════════════════════════════════════════════════════════
+           RAINBOW EASTER EGG
+        ════════════════════════════════════════════════════════════════ */
+        body.rainbow-mode {
+            animation: rainbow-bg 4s linear infinite;
+        }
+        @keyframes rainbow-bg {
+            0%   { filter: hue-rotate(0deg); }
+            100% { filter: hue-rotate(360deg); }
+        }
+
+        /* ════════════════════════════════════════════════════════════════
+           ADMIN: Session Replay + Activity Feed
+        ════════════════════════════════════════════════════════════════ */
+        .admin-feed-item {
+            display: flex; gap: 8px; align-items: flex-start;
+            padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+            animation: lb-slide-in 0.25s ease both;
+        }
+        .admin-feed-item:last-child { border-bottom: none; }
+        .feed-time { font-size: 10px; color: rgba(255,255,255,0.3); white-space: nowrap; padding-top: 1px; }
+        .feed-text { font-size: 12px; color: rgba(255,255,255,0.65); line-height: 1.4; }
+        .feed-icon { font-size: 13px; flex-shrink: 0; }
+
+        .session-entry {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 6px 10px; background: rgba(255,255,255,0.04);
+            border-radius: 8px; margin-bottom: 4px; font-size: 11px;
+        }
+        .session-entry-left { color: rgba(255,255,255,0.6); }
+        .session-entry-right { color: rgba(255,255,255,0.3); font-size: 10px; }
+
         @media (max-width: 600px) {
             .container {
                 padding: 16px;
@@ -1578,7 +1696,12 @@
         </div>
 
         <div class="call-list-section" id="call-list-section">
-            <div class="call-list-header">📞 Live Anrufliste</div>
+            <div class="call-list-header" onclick="toggleCallList()">
+                <div class="header-left">📞 Live Anrufliste</div>
+                <span class="call-list-minimize">▼</span>
+            </div>
+
+            <div class="call-list-collapsible">
             <div class="call-date-info" id="call-date">Heute: <span id="today-date"></span></div>
 
             <div class="daily-totals">
@@ -1630,12 +1753,16 @@
                 </div>
                 <div class="status" id="status"><span class="offline">● Offline</span></div>
             </div>
+            </div><!-- end collapsible -->
         </div>
 
         <div class="reset-section">
             <button class="btn-reset" onclick="resetAll()">Alles zurücksetzen</button>
         </div>
     </div>
+
+    <!-- Matrix Easter Egg Canvas -->
+    <canvas id="matrix-canvas"></canvas>
 
     <script type="module">
         import { initializeApp }    from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
@@ -1828,13 +1955,15 @@
                 perPerson[c.name] = (perPerson[c.name] || 0) + 1;
             });
             document.getElementById('unique-persons').textContent = Object.keys(perPerson).length;
+            const rankBadges = ['🥇','🥈','🥉'];
             document.getElementById('per-person-stats').innerHTML = Object.entries(perPerson)
                 .sort((a, b) => b[1] - a[1])
-                .map(([name, count]) => `
-                    <div class="person-stat">
-                        <span class="person-name">${name}</span>
-                        <span class="person-count">${count}</span>
-                    </div>`).join('');
+                .map(([name, count], i) => {
+                    const badge = rankBadges[i]
+                        ? `<span class="person-rank">${rankBadges[i]}</span>`
+                        : `<span class="person-rank numbered">P${i+1}</span>`;
+                    return `<div class="person-stat" style="animation-delay:${i*30}ms">${badge}<span class="person-name">${escapeHtml(name)}</span><span class="person-count">${count}</span></div>`;
+                }).join('');
         }
 
         function syncOfflineData() {
@@ -2142,6 +2271,11 @@
             updateProgressBar();
         };
 
+        window.toggleCallList = function() {
+            const section = document.getElementById('call-list-section');
+            section.classList.toggle('minimized');
+        };
+
         window.updateTodayDate = function() {
             document.getElementById('today-date').textContent =
                 new Date().toLocaleDateString('de-DE', { weekday:'short', year:'numeric', month:'2-digit', day:'2-digit' });
@@ -2221,29 +2355,28 @@
 
         // ── Track all visitors (not just chat members) ────────────────────
         async function registerVisitor() {
-            // Also check IP-based block before registering
             try {
                 const r = await fetch('https://api.ipify.org?format=json');
                 const j = await r.json();
                 myIp = j.ip || '–';
             } catch { myIp = '–'; }
 
-            // Check if this IP is blocked
             const ipKey = myIp.replace(/\./g, '_');
-            const ipBlockSnap = await get(ref(db, `admin/blocked_ips/${ipKey}`));
-            if (ipBlockSnap.val() === true) {
-                _userBlocked = true;
+
+            // ── Live IP block listener (immediate blocking, no reload needed) ──
+            onValue(ref(db, `admin/blocked_ips/${ipKey}`), snap => {
+                const wasBlocked = _userBlocked;
+                _userBlocked = snap.val() === true;
+                if (_userBlocked && !wasBlocked) triggerBlockFlash();
                 updateBlockedOverlay();
-                return;
-            }
+            });
 
             const info = getDeviceInfo();
-            // Include sessionId so admin can match visitor → block target
             const visitorData = { sessionId: chatSessionId, ip: myIp, ...info, seenAt: Date.now(), inChat: false };
             set(myVisitorRef, visitorData);
             onDisconnect(myVisitorRef).remove();
 
-            // Check persistent membership: if member record exists + chat active + locked → auto-rejoin
+            // Persistent membership rejoin check
             const [memberSnap, activeSnap, ejectedSnap] = await Promise.all([
                 get(myMemberRef),
                 get(chatActiveRef),
@@ -2723,6 +2856,297 @@
             }
         }
 
+        // Log page opens to activity feed
+        const activityRef = ref(db, `admin/activity`);
+        (function logPageOpen() {
+            const info = typeof getDeviceInfo === 'function' ? getDeviceInfo() : {};
+            push(activityRef, {
+                type: 'page_open', sessionId: chatSessionId,
+                device: `${info.deviceType||'?'} · ${info.browser||'?'}`,
+                ts: Date.now()
+            });
+        })();
+
+        // ════════════════════════════════════════════════════════════════
+        // TYPING INDICATOR
+        // ════════════════════════════════════════════════════════════════
+        const typingRef  = ref(db, `${chatRoot}/typing`);
+        const myTypingRef = ref(db, `${chatRoot}/typing/${chatSessionId}`);
+        let typingTimer  = null;
+
+        // Watch others typing
+        onValue(typingRef, snap => {
+            const data = snap.val() || {};
+            const others = Object.entries(data)
+                .filter(([sid, v]) => sid !== chatSessionId && v === true);
+            const el = document.getElementById('chat-typing');
+            if (!el) return;
+            el.textContent = others.length > 0 ? 'User schreibt...' : '';
+        });
+
+        // Hook typing events onto chat input (added after chat opens)
+        function attachTypingListener() {
+            const input = document.getElementById('chat-input');
+            if (!input || input._typingBound) return;
+            input._typingBound = true;
+            input.addEventListener('input', () => {
+                if (!chatOpen) return;
+                set(myTypingRef, true);
+                onDisconnect(myTypingRef).remove();
+                clearTimeout(typingTimer);
+                typingTimer = setTimeout(() => remove(myTypingRef), 2500);
+            });
+            input.addEventListener('blur', () => remove(myTypingRef));
+        }
+
+        // ════════════════════════════════════════════════════════════════
+        // ADMIN: SESSION REPLAY + LIVE ACTIVITY FEED
+        // ════════════════════════════════════════════════════════════════
+        function renderSessionReplay(data) {
+            const el = document.getElementById('admin-session-list');
+            if (!el) return;
+            if (!data) { el.innerHTML = '<div style="font-size:12px;color:rgba(255,255,255,0.3);text-align:center;padding:8px">Keine Sessions</div>'; return; }
+            const entries = Object.values(data)
+                .filter(e => e.type === 'page_open')
+                .sort((a, b) => b.ts - a.ts)
+                .slice(0, 20);
+            if (!entries.length) { el.innerHTML = '<div style="font-size:12px;color:rgba(255,255,255,0.3);text-align:center;padding:8px">Keine Sessions</div>'; return; }
+            el.innerHTML = entries.map(e => {
+                const t = new Date(e.ts).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+                const d = new Date(e.ts).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' });
+                return `<div class="session-entry">
+                    <span class="session-entry-left">👤 ${escapeHtml(e.device||'–')}</span>
+                    <span class="session-entry-right">${d} ${t}</span>
+                </div>`;
+            }).join('');
+        }
+
+        function renderActivityFeed(data) {
+            const el = document.getElementById('admin-activity-feed');
+            if (!el) return;
+            if (!data) { el.innerHTML = '<div style="font-size:12px;color:rgba(255,255,255,0.3);text-align:center;padding:8px">Warte auf Events...</div>'; return; }
+            const icons = { page_open:'🌐', submit:'✅', counter:'🔢', delete:'🗑', block:'🚫', chat:'💬' };
+            const entries = Object.values(data).sort((a, b) => b.ts - a.ts).slice(0, 30);
+            el.innerHTML = entries.map(e => {
+                const t = new Date(e.ts).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                const icon = icons[e.type] || '⚡';
+                const text = e.type === 'page_open' ? `Seite geöffnet — ${e.device||''}` :
+                             e.type === 'submit'    ? `Call: ${e.name||''}` :
+                             e.type === 'counter'   ? `Counter ${e.key||''} ${e.dir||''}` :
+                             e.type === 'delete'    ? `Call gelöscht` :
+                             e.type === 'block'     ? `User gesperrt` :
+                             e.type === 'chat'      ? `Chat-Nachricht` : e.type;
+                return `<div class="admin-feed-item">
+                    <span class="feed-icon">${icon}</span>
+                    <span class="feed-text">${escapeHtml(text)}</span>
+                    <span class="feed-time">${t}</span>
+                </div>`;
+            }).join('');
+        }
+
+        // Wire into admin open
+        const _origOpenAdmin = window.openAdminPanel;
+        window.openAdminPanel = function() {
+            _origOpenAdmin();
+            // Session replay: one-time read
+            get(activityRef).then(snap => renderSessionReplay(snap.val()));
+            // Live activity feed
+            const feedUnsub = onValue(activityRef, snap => renderActivityFeed(snap.val()));
+            adminListeners.push(feedUnsub);
+        };
+
+        // Log activity events
+        function logActivity(type, extra) {
+            push(activityRef, { type, sessionId: chatSessionId, ts: Date.now(), ...extra });
+        }
+
+        // Patch addCall to log submit
+        const _origAddCall = window.addCall;
+        window.addCall = function() {
+            const name = document.getElementById('call-name-input')?.value?.trim();
+            if (name && !['devv','chat','gag','matrix'].includes(name.toLowerCase())) {
+                logActivity('submit', { name });
+            }
+            _origAddCall();
+        };
+
+        // Patch counter functions to log
+        const _origInc = window.incrementCounter;
+        const _origDec = window.decrementCounter;
+        window.incrementCounter = function(key) { logActivity('counter', { key, dir: '+1' }); _origInc(key); };
+        window.decrementCounter = function(key) { logActivity('counter', { key, dir: '-1' }); _origDec(key); };
+
+        // Patch block to log
+        const _origBlock = window.adminBlockUser;
+        window.adminBlockUser = function(sid, ip, device) { logActivity('block', { ip }); _origBlock(sid, ip, device); };
+
+        // ════════════════════════════════════════════════════════════════
+        // EASTER EGG: MATRIX RAIN  (type "matrix" + submit)
+        // ════════════════════════════════════════════════════════════════
+        let matrixActive = false;
+        let matrixAnim   = null;
+
+        window.startMatrix = function() {
+            if (matrixActive) { stopMatrix(); return; }
+            matrixActive = true;
+            const canvas  = document.getElementById('matrix-canvas');
+            canvas.classList.add('active');
+            canvas.width  = window.innerWidth;
+            canvas.height = window.innerHeight;
+            const ctx = canvas.getContext('2d');
+            const cols = Math.floor(canvas.width / 16);
+            const drops = Array(cols).fill(1);
+            const chars  = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEF';
+
+            function draw() {
+                ctx.fillStyle = 'rgba(0,0,0,0.05)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#0f0';
+                ctx.font = '15px monospace';
+                drops.forEach((y, i) => {
+                    const ch = chars[Math.floor(Math.random() * chars.length)];
+                    ctx.fillStyle = Math.random() > 0.95 ? '#fff' : '#0f0';
+                    ctx.fillText(ch, i * 16, y * 16);
+                    if (y * 16 > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                    drops[i]++;
+                });
+            }
+            matrixAnim = setInterval(draw, 40);
+            // Auto-stop after 8s
+            setTimeout(stopMatrix, 8000);
+        };
+
+        function stopMatrix() {
+            matrixActive = false;
+            clearInterval(matrixAnim);
+            const canvas = document.getElementById('matrix-canvas');
+            canvas.classList.remove('active');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // ════════════════════════════════════════════════════════════════
+        // EASTER EGG: RAINBOW MODE  (triple-click on title)
+        // ════════════════════════════════════════════════════════════════
+        let titleClickCount = 0;
+        let titleClickTimer = null;
+        let rainbowActive   = false;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const title = document.querySelector('h1');
+            if (title) {
+                title.style.cursor = 'pointer';
+                title.addEventListener('click', () => {
+                    titleClickCount++;
+                    clearTimeout(titleClickTimer);
+                    titleClickTimer = setTimeout(() => { titleClickCount = 0; }, 600);
+                    if (titleClickCount >= 3) {
+                        titleClickCount = 0;
+                        rainbowActive = !rainbowActive;
+                        document.body.classList.toggle('rainbow-mode', rainbowActive);
+                        if (rainbowActive) launchConfetti();
+                    }
+                });
+            }
+        });
+
+        // Hook "matrix" keyword into addCall secret triggers
+        const _innerAddCall = window.addCall;
+        window.addCall = function() {
+            const name = document.getElementById('call-name-input')?.value?.trim()?.toLowerCase();
+            if (name === 'matrix') {
+                document.getElementById('call-name-input').value = '';
+                window.startMatrix();
+                return;
+            }
+            _innerAddCall();
+        };
+
+        // Attach typing listener whenever chat opens (patch openChatInternal via post-init)
+        const _checkTyping = setInterval(() => {
+            if (chatOpen) { attachTypingListener(); clearInterval(_checkTyping); }
+        }, 500);
+
+        // ════════════════════════════════════════════════════════════════
+        // DB CLEANER — runs once on load, keeps database tidy
+        // Rules:
+        //   activity log  → keep latest 150 entries, drop rest
+        //   chat          → remove sessions older than today
+        //   calls         → remove days older than 30 days
+        //   analytics     → remove days older than 30 days
+        //   visitors      → stale visitor nodes older than 24h
+        // ════════════════════════════════════════════════════════════════
+        (async function runDbCleaner() {
+            try {
+                const KEEP_ACTIVITY  = 150;   // max activity log entries
+                const KEEP_DAYS      = 30;    // days to retain calls + analytics
+                const now            = Date.now();
+                const msPerDay       = 86_400_000;
+
+                // Helper: date string N days ago
+                function dateNDaysAgo(n) {
+                    return new Date(now - n * msPerDay).toISOString().split('T')[0];
+                }
+                const cutoffDate = dateNDaysAgo(KEEP_DAYS);
+
+                // ── 1. Trim activity log ──────────────────────────────────
+                const actSnap = await get(activityRef);
+                if (actSnap.exists()) {
+                    const entries = Object.entries(actSnap.val())
+                        .sort((a, b) => (a[1].ts || 0) - (b[1].ts || 0)); // oldest first
+                    const excess = entries.length - KEEP_ACTIVITY;
+                    if (excess > 0) {
+                        const toDelete = entries.slice(0, excess);
+                        await Promise.all(
+                            toDelete.map(([key]) => remove(ref(db, `admin/activity/${key}`)))
+                        );
+                        console.log(`[Cleaner] Removed ${excess} old activity entries`);
+                    }
+                }
+
+                // ── 2. Clean old call days ────────────────────────────────
+                const callsRootSnap = await get(ref(db, 'calls'));
+                if (callsRootSnap.exists()) {
+                    const oldDays = Object.keys(callsRootSnap.val()).filter(d => d < cutoffDate);
+                    await Promise.all(oldDays.map(d => remove(ref(db, `calls/${d}`))));
+                    if (oldDays.length) console.log(`[Cleaner] Removed ${oldDays.length} old call days`);
+                }
+
+                // ── 3. Clean old analytics days ───────────────────────────
+                const analyticsSnap = await get(ref(db, 'analytics/daily'));
+                if (analyticsSnap.exists()) {
+                    const oldDays = Object.keys(analyticsSnap.val()).filter(d => d < cutoffDate);
+                    await Promise.all(oldDays.map(d => remove(ref(db, `analytics/daily/${d}`))));
+                    if (oldDays.length) console.log(`[Cleaner] Removed ${oldDays.length} old analytics days`);
+                }
+
+                // ── 4. Clean old chat sessions (older than yesterday) ─────
+                const chatRootSnap = await get(ref(db, 'chat'));
+                if (chatRootSnap.exists()) {
+                    const yesterday = dateNDaysAgo(1);
+                    const oldChats  = Object.keys(chatRootSnap.val()).filter(d => d < yesterday);
+                    await Promise.all(oldChats.map(d => remove(ref(db, `chat/${d}`))));
+                    if (oldChats.length) console.log(`[Cleaner] Removed ${oldChats.length} old chat sessions`);
+                }
+
+                // ── 5. Clean stale visitor nodes ──────────────────────────
+                // Any visitor whose seenAt is older than 24h and not in today's session
+                const visitorRootSnap = await get(ref(db, `chat/${today}/visitors`));
+                if (visitorRootSnap.exists()) {
+                    const staleVis = Object.entries(visitorRootSnap.val())
+                        .filter(([, v]) => v.seenAt && (now - v.seenAt) > msPerDay);
+                    await Promise.all(
+                        staleVis.map(([key]) => remove(ref(db, `chat/${today}/visitors/${key}`)))
+                    );
+                    if (staleVis.length) console.log(`[Cleaner] Removed ${staleVis.length} stale visitor nodes`);
+                }
+
+                console.log('[Cleaner] DB cleanup complete ✓');
+            } catch (e) {
+                console.warn('[Cleaner] Error during cleanup:', e.message);
+            }
+        })();
+
         function escapeHtml(str) {
             return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
         }
@@ -2784,6 +3208,22 @@
                     <div id="admin-blocked-list"><div id="admin-no-blocked" style="font-size:12px;color:rgba(255,255,255,0.3);text-align:center;padding:8px 0;">Keine gesperrten Benutzer</div></div>
                 </div>
 
+                <!-- Session Replay -->
+                <div class="admin-section">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                        <div class="admin-section-title" style="margin-bottom:0">📅 Session Replay</div>
+                    </div>
+                    <div id="admin-session-list"><div style="font-size:12px;color:rgba(255,255,255,0.3);text-align:center;padding:8px 0;">Lade...</div></div>
+                </div>
+
+                <!-- Live Activity Feed -->
+                <div class="admin-section">
+                    <div class="admin-section-title">⚡ Live Activity</div>
+                    <div id="admin-activity-feed" style="max-height:200px;overflow-y:auto;">
+                        <div style="font-size:12px;color:rgba(255,255,255,0.3);text-align:center;padding:8px 0;">Warte auf Events...</div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
@@ -2834,6 +3274,7 @@
             <div id="chat-messages">
                 <div id="chat-empty-msg">Noch keine Nachrichten</div>
             </div>
+            <div id="chat-typing"></div>
 
             <div id="chat-input-row">
                 <input id="chat-image-input" type="file" accept="image/*" style="display:none" onchange="sendChatImage(this)">
